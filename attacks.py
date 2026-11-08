@@ -16,6 +16,7 @@ import base64
 import os
 import random
 import re
+import zlib
 import pandas as pd
 
 from config import ATTACK_DIR, DATA_DIR, SEED
@@ -46,7 +47,7 @@ def to_leetspeak(text: str, seed: int = None, p: float = 0.7) -> str:
     """
     if not isinstance(text, str):
         text = str(text)
-    effective_seed = seed if seed is not None else (SEED + (abs(hash(text)) % 1000003))
+    effective_seed = seed if seed is not None else (SEED + (zlib.crc32(text.encode("utf-8")) % 1000003))
     rng = random.Random(effective_seed)
 
     chars = []
@@ -135,7 +136,7 @@ def to_wrapped(text: str, template_idx: int = None) -> str:
     if template_idx is not None:
         tpl = WRAPPED_TEMPLATES[template_idx % len(WRAPPED_TEMPLATES)]
     else:
-        idx = (abs(hash(text)) + SEED) % len(WRAPPED_TEMPLATES)
+        idx = (zlib.crc32(text.encode("utf-8")) + SEED) % len(WRAPPED_TEMPLATES)
         tpl = WRAPPED_TEMPLATES[idx]
     return tpl.format(attack=text.strip())
 
@@ -381,7 +382,7 @@ def _offline_hindi_translate(text: str) -> str:
     return cleaned
 
 
-def to_hindi(text: str) -> str:
+def to_hindi(text: str, return_method: bool = False):
     """
     Translate the attack to Hindi.
     Tries deep-translator if available; falls back to the domain-specific
@@ -389,16 +390,30 @@ def to_hindi(text: str) -> str:
     """
     if not isinstance(text, str):
         text = str(text)
+
+    translated = None
+    method = None
+
     try:
         from deep_translator import GoogleTranslator
 
         res = GoogleTranslator(source="auto", target="hi").translate(text)
         if res and res.strip():
-            return res.strip()
+            translated = res.strip()
+            method = "translator"
     except Exception:
         pass
 
-    return _offline_hindi_translate(text)
+    if translated is None:
+        translated = _offline_hindi_translate(text)
+        method = "offline_fallback"
+
+    if translated.strip() == text.strip():
+        method = "unchanged"
+
+    if return_method:
+        return translated, method
+    return translated
 
 
 # ---------------------------------------------------------
@@ -428,18 +443,33 @@ def generate_attack_sets():
     }
 
     examples_to_print = {}
+    hindi_method_counts = None
 
     for attack_name, gen_fn in attack_generators.items():
-        transformed_texts = [gen_fn(t) for t in sample_df["text"]]
-
-        out_df = pd.DataFrame(
-            {
-                "text": transformed_texts,
-                "label": 1,
-                "original_text": sample_df["text"],
-                "attack_type": attack_name,
-            }
-        )
+        if attack_name == "hindi":
+            results = [to_hindi(t, return_method=True) for t in sample_df["text"]]
+            transformed_texts = [r[0] for r in results]
+            methods = [r[1] for r in results]
+            out_df = pd.DataFrame(
+                {
+                    "text": transformed_texts,
+                    "label": 1,
+                    "original_text": sample_df["text"],
+                    "attack_type": attack_name,
+                    "method": methods,
+                }
+            )
+            hindi_method_counts = out_df["method"].value_counts()
+        else:
+            transformed_texts = [gen_fn(t) for t in sample_df["text"]]
+            out_df = pd.DataFrame(
+                {
+                    "text": transformed_texts,
+                    "label": 1,
+                    "original_text": sample_df["text"],
+                    "attack_type": attack_name,
+                }
+            )
 
         out_path = os.path.join(ATTACK_DIR, f"{attack_name}.csv")
         out_df.to_csv(out_path, index=False)
@@ -455,6 +485,13 @@ def generate_attack_sets():
         for i, (orig, disg) in enumerate(exs, 1):
             print(f"[{attack_name} #{i}] Original : {orig[:90]}")
             print(f"[{attack_name} #{i}] Disguised: {disg[:90]}")
+
+    if hindi_method_counts is not None:
+        print("\n" + "=" * 70)
+        print("HINDI TRANSLATION METHOD COUNTS:")
+        print("=" * 70)
+        for method, count in hindi_method_counts.items():
+            print(f"  {method}: {count}")
 
     print("\nattacks.py finished: all 5 attack datasets successfully created in " + ATTACK_DIR)
 
