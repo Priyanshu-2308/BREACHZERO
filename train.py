@@ -91,7 +91,7 @@ def main():
 
     use_gpu = torch.cuda.is_available()
     targs = TrainingArguments(
-        output_dir=os.path.join(args.out, "checkpoints"),
+        output_dir=args.out.rstrip("/") + "_ckpt",
         num_train_epochs=args.epochs,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
