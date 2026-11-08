@@ -1,4 +1,5 @@
 import argparse
+import inspect
 import os
 
 import numpy as np
@@ -37,6 +38,19 @@ def hf_metrics(eval_pred):
     m = compute_metrics(labels, preds)
     m.pop("n")
     return m
+
+
+def build_args(**kwargs):
+    """TrainingArguments, minus whatever this transformers version dropped."""
+    allowed = inspect.signature(TrainingArguments.__init__).parameters
+    if "eval_strategy" not in allowed and "evaluation_strategy" in allowed:
+        kwargs["evaluation_strategy"] = kwargs.pop("eval_strategy")
+    unsupported = [k for k in kwargs if k not in allowed]
+    for k in unsupported:
+        kwargs.pop(k)
+    if unsupported:
+        print("note: transformers ignores these here:", unsupported)
+    return TrainingArguments(**kwargs)
 
 
 def load_split(name, limit=0):
@@ -90,7 +104,7 @@ def main():
                          tokenizer, args.max_len)
 
     use_gpu = torch.cuda.is_available()
-    targs = TrainingArguments(
+    targs = build_args(
         output_dir=args.out.rstrip("/") + "_ckpt",
         num_train_epochs=args.epochs,
         per_device_train_batch_size=32,
