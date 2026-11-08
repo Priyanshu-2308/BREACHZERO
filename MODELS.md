@@ -5,15 +5,16 @@ Large model weights/checkpoints are gitignored (see `.gitignore`). Record downlo
 | Model | Location | Notes |
 |---|---|---|
 | baseline (TF-IDF + LogReg) | `models/baseline.joblib` | committed to the repo, no download needed |
-| DistilBERT (English) | https://huggingface.co/<HF_USERNAME>/breachzero-distilbert | fine-tuned `distilbert-base-uncased`, goes in `models/distilbert` |
-| DistilBERT (multilingual) | https://huggingface.co/<HF_USERNAME>/breachzero-distilbert-multilingual | fine-tuned `distilbert-base-multilingual-cased`, goes in `models/distilbert_multilingual` |
+| DistilBERT (English) | https://huggingface.co/sarthak776/breachzero-distilbert | fine-tuned `distilbert-base-uncased`, goes in `models/distilbert` |
+| DistilBERT (multilingual) | https://huggingface.co/sarthak776/breachzero-distilbert-multilingual | fine-tuned `distilbert-base-multilingual-cased`, goes in `models/distilbert_multilingual` |
 
 Download each into the right folder:
 
-```bash
-pip install -U huggingface_hub
-huggingface-cli download <HF_USERNAME>/breachzero-distilbert --local-dir models/distilbert
-huggingface-cli download <HF_USERNAME>/breachzero-distilbert-multilingual --local-dir models/distilbert_multilingual
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download("sarthak776/breachzero-distilbert", local_dir="models/distilbert")
+snapshot_download("sarthak776/breachzero-distilbert-multilingual", local_dir="models/distilbert_multilingual")
 ```
 
 Then `python run_eval.py` picks both models up automatically.
