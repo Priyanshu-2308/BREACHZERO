@@ -115,7 +115,6 @@ def main():
         args=targs,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        tokenizer=tokenizer,
         data_collator=DataCollatorWithPadding(tokenizer),
         compute_metrics=hf_metrics,
     )
