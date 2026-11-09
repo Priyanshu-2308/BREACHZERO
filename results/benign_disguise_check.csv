@@ -1,0 +1,16 @@
+model,disguise,false_positive_rate,n
+baseline,leetspeak,0.010526315789473684,190
+baseline,cyrillic,0.0,190
+baseline,base64,0.0,190
+baseline,wrapped,0.02631578947368421,190
+baseline,hindi,0.010526315789473684,190
+distilbert,leetspeak,0.6736842105263158,190
+distilbert,cyrillic,0.9894736842105263,190
+distilbert,base64,1.0,190
+distilbert,wrapped,0.21052631578947367,190
+distilbert,hindi,0.22105263157894736,190
+distilbert_multilingual,leetspeak,0.8842105263157894,190
+distilbert_multilingual,cyrillic,0.9842105263157894,190
+distilbert_multilingual,base64,1.0,190
+distilbert_multilingual,wrapped,0.22631578947368422,190
+distilbert_multilingual,hindi,0.13157894736842105,190

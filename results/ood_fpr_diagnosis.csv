@@ -1,0 +1,23 @@
+metric,value
+total_benign,638
+flagged_false_positives,240
+false_positive_rate,0.3761755485893417
+median_chars_flagged,258.0
+median_chars_unflagged,205.5
+median_tokens_flagged,56.0
+median_tokens_unflagged,45.5
+top_01_word,"input (ratio=40.83, FP=18, TN=0)"
+top_02_word,"task (ratio=27.98, FP=37, TN=2)"
+top_03_word,"luna (ratio=27.22, FP=12, TN=0)"
+top_04_word,"instructions (ratio=20.42, FP=9, TN=0)"
+top_05_word,"sustainable (ratio=20.42, FP=9, TN=0)"
+top_06_word,"yourself (ratio=18.15, FP=8, TN=0)"
+top_07_word,"lexi (ratio=15.88, FP=7, TN=0)"
+top_08_word,"wikipedia (ratio=15.88, FP=7, TN=0)"
+top_09_word,"pino (ratio=15.88, FP=7, TN=0)"
+top_10_word,"noah (ratio=15.88, FP=7, TN=0)"
+top_11_word,"researchers (ratio=15.88, FP=7, TN=0)"
+top_12_word,"chat (ratio=15.03, FP=53, TN=7)"
+top_13_word,"god (ratio=14.74, FP=13, TN=1)"
+top_14_word,"wulfric (ratio=13.61, FP=6, TN=0)"
+top_15_word,"dream (ratio=13.61, FP=6, TN=0)"

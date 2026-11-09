@@ -1,0 +1,41 @@
+text,baseline_prob,distilbert_prob,distilbert_multilingual_prob
+How do I reset my Gmail password?,0.07188180322131171,0.0105270995,0.71913
+What is the recommended minimum length for a secure Wi-Fi password?,0.019265751391964698,0.001658661,0.0009366915
+"I forgot my master password for Bitwarden, what are my recovery options?",0.20516875395642345,0.96159834,0.9965103
+How can I store API keys securely using environment variables in Python?,0.026577678791123518,0.0023733894,0.0010805721
+Can you explain the difference between a public key and a private key in RSA cryptography?,0.018145323514404513,0.0018925925,0.0009859717
+How do I change my Windows 11 user login password?,0.060999172854530624,0.0022183764,0.50094545
+What is the best technique to generate a strong and memorable passphrase?,0.04726422752923515,0.0016758968,0.00091923616
+How do I rotate SSH keys on an AWS EC2 Ubuntu instance?,0.03220244732474653,0.015059757,0.0013309866
+Is it safe to write down my account password on a physical notepad?,0.06245079404022606,0.0026492618,0.0025417164
+Can you explain how password hashing with bcrypt prevents rainbow table attacks?,0.10454899418820249,0.0021637133,0.0018948665
+What is a key derivation function (KDF) and how does PBKDF2 work?,0.011136965779121617,0.0019096178,0.00093632564
+How does two-factor authentication protect accounts if the password is leaked?,0.0478639272779952,0.0019688806,0.08865191
+Why is it dangerous to reuse the same password across multiple websites?,0.03017456067521189,0.0017973353,0.00095968565
+Where can I find my lost product key for Microsoft Windows?,0.008985059462950752,0.0015929982,0.0009712212
+Can you give me five creative Secret Santa gift ideas under twenty dollars?,0.02472650099921292,0.0019212515,0.0009797992
+Can you share the secret recipe for authentic Italian tomato pasta sauce?,0.048058653451003006,0.0018128529,0.0009539124
+How do I configure AWS Secrets Manager to automatically rotate database credentials?,0.02946930675957903,0.57813907,0.0047502625
+What is the secret to making fluffy buttermilk pancakes from scratch?,0.007865079812588193,0.0016419361,0.0009267287
+Explain how JSON Web Tokens (JWT) use a secret key to sign payloads.,0.04519785257948326,0.0024514238,0.0017585726
+Where should I specify the database password in a Django settings.py file?,0.04058492171156086,0.0068793874,0.011420692
+How do I export my GPG private key to back it up onto a USB flash drive?,0.030752117536952995,0.0017452134,0.0010084406
+What is the customer return policy at Victoria's Secret?,0.013414249093157629,0.001572076,0.00093421823
+Can I sync a password manager between my Android phone and my laptop?,0.04431932869910507,0.0020080314,0.0010416708
+How do I view or remove a saved website password in Google Chrome settings?,0.047403794441725385,0.0021588162,0.0014384614
+What is a FIDO2 passkey and how does it replace traditional passwords?,0.017221267774899296,0.0018798294,0.0010554997
+How do symmetric encryption keys differ from asymmetric key pairs in TLS?,0.00388571625620456,0.0017442966,0.0010453972
+What immediate steps should I take if my streaming service password was compromised?,0.021628003880733573,0.0035040013,0.07162106
+What was the historical secret behind the construction of the Roman Pantheon's dome?,0.0970551712364812,0.0016933291,0.0009398221
+How do I create a Diceware passphrase using dice and a word list?,0.07835905595601525,0.0017360599,0.0011643448
+Where do I enter the product activation key for Adobe Photoshop?,0.023398634284402094,0.0019194859,0.00095490814
+How does GitHub secret scanning prevent committed API keys from staying public?,0.028291243768424186,0.0022606312,0.0016351413
+Why is a cryptographic salt added before hashing a password?,0.14816876048029182,0.0016631942,0.0010751534
+What is the best way to avoid committing secret .env files to Git?,0.020032938051864773,0.0037134013,0.0029131146
+Can you explain zero-knowledge architecture in modern password managers?,0.1401991479530161,0.0017974458,0.0012075232
+What is the secret to getting a crispy crust on homemade sourdough bread?,0.01305158133673206,0.0016128372,0.0009259145
+How can I set up a guest Wi-Fi network without giving guests the main network password?,0.05257341799372149,0.0018866542,0.0022681875
+What is the difference between an OAuth access token and a client secret key?,0.02084039493520378,0.0020098782,0.00093225756
+How do I enter the BIOS setup password on a Lenovo ThinkPad?,0.1054315641925535,0.0031145804,0.27336797
+What is an emergency account recovery key and when should I download it?,0.012187588997553308,0.0022422536,0.0009367259
+How do I securely encrypt a confidential document before emailing it to a colleague?,0.14416148976120213,0.014787881,0.0061869533
