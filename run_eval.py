@@ -1,3 +1,5 @@
+"""Evaluates baseline and DistilBERT models on test, OOD, and attack sets, writing results/main_results.csv."""
+
 import argparse
 import os
 
@@ -15,12 +17,12 @@ def load_eval_sets():
     for name in ["test", "ood_jailbreak"]:
         path = os.path.join(DATA_DIR, f"{name}.csv")
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Missing {path}. Run data.py (Person 1) first.")
+            raise FileNotFoundError(f"Missing {path}. Run data.py first.")
         sets.append((name, pd.read_csv(path)))
     for name in ATTACKS:
         path = os.path.join(ATTACK_DIR, f"{name}.csv")
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Missing {path}. Run attacks.py (Person 2) first.")
+            raise FileNotFoundError(f"Missing {path}. Run attacks.py first.")
         sets.append((name, pd.read_csv(path)))
     return sets
 
@@ -76,14 +78,14 @@ def main():
     out.to_csv(path, index=False)
 
     print(f"\nthreshold = {args.threshold}")
-    print("=" * 78)
+    print("-" * 65)
     print(f"{'model':<26}{'test_set':<17}{'recall':>9}{'FPR':>11}{'f1':>9}{'n':>6}")
-    print("=" * 78)
+    print("-" * 65)
     for r in records:
         fpr = "-" if pd.isna(r["false_positive_rate"]) else f"{r['false_positive_rate']:.4f}"
         f1 = "-" if pd.isna(r["f1"]) else f"{r['f1']:.4f}"
         print(f"{r['model']:<26}{r['test_set']:<17}{r['recall']:>9.4f}{fpr:>11}{f1:>9}{r['n']:>6}")
-    print("=" * 78)
+    print("-" * 65)
     print(f"\nSaved {len(records)} rows to {path}")
     print("run_eval.py finished.")
 

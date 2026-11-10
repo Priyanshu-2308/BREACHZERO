@@ -1,3 +1,5 @@
+"""Cached inference helper for DistilBERT models."""
+
 import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer

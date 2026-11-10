@@ -1,22 +1,4 @@
-"""
-Task 5 for Person 4: Augmentation Experiment (Leave-One-Disguise-Out)
-Builds adversarial augmentation datasets and tests recovery of robustness:
-
-1. Samples 200 injections and 200 benign prompts from data/train.csv (NOT test.csv).
-2. Applies all 5 disguises (leetspeak, cyrillic, base64, wrapped, hindi) to both injections and benigns.
-3. Generates combined data/augmented_train_extra.csv (2000 rows: 1000 attacks, 1000 benigns).
-4. Generates leave-one-out subsets for held-out testing (hindi and base64).
-5. Trains:
-   - models/distilbert_aug_hindi (held out: hindi)
-   - models/distilbert_aug_base64 (held out: base64)
-   - models/distilbert_aug_all (all 5 types, NOT an unseen-type test)
-6. Evaluates before vs after on:
-   - data/attacks/*.csv (Recall)
-   - data/test.csv (FPR)
-   - data/ood_jailbreak.csv (FPR)
-   - data/benign_disguised/*.csv (FPR)
-7. Saves results/augment_results.csv and results/augment_results.png.
-"""
+"""Builds adversarial augmentation data, trains leave-one-out models, and evaluates recovery."""
 
 import os
 import subprocess
@@ -59,23 +41,19 @@ def build_augmented_datasets():
     benign_df = train_df[train_df["label"] == 0].sample(n=200, random_state=SEED).reset_index(drop=True)
     print(f"Sampled 200 injections and 200 benign prompts from {train_path} for augmentation.", flush=True)
 
-    pool = []  # list of dicts with text, label, disguise_type
+    pool = []
     for name, fn in DISGUISE_FNS.items():
-        # Disguised attacks (label 1)
         for t in injections_df["text"]:
             pool.append({"text": fn(t), "label": 1, "disguise_type": name})
-        # Disguised benign controls (label 0)
         for t in benign_df["text"]:
             pool.append({"text": fn(t), "label": 0, "disguise_type": name})
 
     pool_df = pd.DataFrame(pool).sample(frac=1.0, random_state=SEED).reset_index(drop=True)
 
-    # 1. Combined all-types extra set -> data/augmented_train_extra.csv
     all_extra_path = os.path.join(DATA_DIR, "augmented_train_extra.csv")
     pool_df[["text", "label"]].to_csv(all_extra_path, index=False)
     print(f"Saved combined all-types extra dataset to {all_extra_path} ({len(pool_df)} rows).", flush=True)
 
-    # 2. Leave-one-out extra sets for 2 held-out types: hindi and base64
     extra_files = {"all": all_extra_path}
     for held_out in ["hindi", "base64"]:
         leave_df = pool_df[pool_df["disguise_type"] != held_out][["text", "label"]]
@@ -88,7 +66,6 @@ def build_augmented_datasets():
 
 
 def train_augmented_model(extra_csv, out_dir, python_bin):
-    """Fine-tune DistilBERT on extra augmented data."""
     import shutil
     os.makedirs(out_dir, exist_ok=True)
     ckpt_dir = f"{out_dir.rstrip('/')}_ckpt"
@@ -105,18 +82,15 @@ def train_augmented_model(extra_csv, out_dir, python_bin):
     if res.returncode != 0:
         raise RuntimeError(f"Training failed for {out_dir}")
 
-    # Remove temporary checkpoint directory to keep models/ clean
     if os.path.exists(ckpt_dir):
         shutil.rmtree(ckpt_dir, ignore_errors=True)
 
 
 def evaluate_model_on_suite(model_name, model_dir):
-    """Evaluates a model across attacks, test set, ood set, and benign disguised sets."""
     print(f"\nEvaluating suite for {model_name} ({model_dir})...", flush=True)
     records = []
     threshold = 0.5
 
-    # 1. Attack sets (Recall)
     for disguise in DISGUISES:
         p = os.path.join(ATTACK_DIR, f"{disguise}.csv")
         df = pd.read_csv(p)
@@ -131,7 +105,6 @@ def evaluate_model_on_suite(model_name, model_dir):
             "n": len(df),
         })
 
-    # 2. Test set FPR
     test_df = pd.read_csv(os.path.join(DATA_DIR, "test.csv"))
     probs_test = predict_proba(test_df["text"].astype(str).tolist(), model_dir, batch_size=64)
     y_pred_test = (probs_test >= threshold).astype(int)
@@ -144,7 +117,6 @@ def evaluate_model_on_suite(model_name, model_dir):
         "n": len(test_df),
     })
 
-    # 3. OOD Jailbreak FPR
     ood_df = pd.read_csv(os.path.join(DATA_DIR, "ood_jailbreak.csv"))
     probs_ood = predict_proba(ood_df["text"].astype(str).tolist(), model_dir, batch_size=64)
     y_pred_ood = (probs_ood >= threshold).astype(int)
@@ -157,7 +129,6 @@ def evaluate_model_on_suite(model_name, model_dir):
         "n": len(ood_df),
     })
 
-    # 4. Benign disguised sets FPR
     benign_disguised_dir = os.path.join(DATA_DIR, "benign_disguised")
     for disguise in DISGUISES:
         p = os.path.join(benign_disguised_dir, f"{disguise}.csv")
@@ -176,11 +147,9 @@ def evaluate_model_on_suite(model_name, model_dir):
 
 
 def plot_results(df_results, out_png):
-    """Generate a clean grouped bar chart comparing before vs after augmentation."""
     plt.style.use("ggplot")
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Plot 1: Recall on Disguised Attacks
     ax1 = axes[0]
     attack_data = df_results[df_results["eval_set"].str.startswith("attack_")].copy()
     attack_data["disguise"] = attack_data["eval_set"].str.replace("attack_", "")
@@ -200,7 +169,6 @@ def plot_results(df_results, out_png):
     ax1.set_ylim(0.0, 1.05)
     ax1.legend(loc="lower right", fontsize=8)
 
-    # Plot 2: FPR on Disguised Benign Controls + Test + OOD
     ax2 = axes[1]
     benign_eval_sets = [f"benign_{d}" for d in DISGUISES] + ["test_set", "ood_jailbreak"]
     fpr_data = df_results[df_results["eval_set"].isin(benign_eval_sets)].copy()
@@ -228,9 +196,9 @@ def plot_results(df_results, out_png):
 
 def main():
     python_bin = sys.executable
-    print("=" * 70, flush=True)
-    print("STARTING TASK 5: AUGMENTATION EXPERIMENT", flush=True)
-    print("=" * 70, flush=True)
+    print("", flush=True)
+    print("Starting adversarial augmentation experiment", flush=True)
+    print("-" * 50, flush=True)
 
     extra_files = build_augmented_datasets()
 
@@ -246,7 +214,6 @@ def main():
         train_augmented_model(extra_csv, out_path, python_bin)
         trained_models.append((model_name, out_path))
 
-    # Evaluate before (base distilbert) and all after models
     all_eval_records = []
     base_distilbert_path = os.path.join(MODEL_DIR, "distilbert")
     all_eval_records.extend(evaluate_model_on_suite("distilbert_before", base_distilbert_path))
@@ -262,16 +229,15 @@ def main():
     out_png = os.path.join(RESULTS_DIR, "augment_results.png")
     plot_results(out_df, out_png)
 
-    # Clean up temporary leave-one-out CSVs (only keep data/augmented_train_extra.csv as requested)
     for held_out in ["hindi", "base64"]:
         temp_csv = extra_files[held_out]
         if os.path.exists(temp_csv):
             os.remove(temp_csv)
             print(f"Removed temporary file: {temp_csv}", flush=True)
 
-    print("\n" + "=" * 70, flush=True)
-    print("AUGMENTATION EXPERIMENT SUMMARY RESULTS")
-    print("=" * 70, flush=True)
+    print("", flush=True)
+    print("Augmentation experiment summary results:")
+    print("-" * 50, flush=True)
     summary_pivot = out_df.pivot(index="eval_set", columns="model", values="score")
     print(summary_pivot.to_string(), flush=True)
     print("\naugment_experiment.py finished.", flush=True)

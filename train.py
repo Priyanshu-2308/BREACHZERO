@@ -1,3 +1,5 @@
+"""Fine-tunes DistilBERT for prompt-injection classification using Hugging Face Trainer."""
+
 import argparse
 import inspect
 import os
@@ -41,7 +43,6 @@ def hf_metrics(eval_pred):
 
 
 def build_args(**kwargs):
-    """TrainingArguments, minus whatever this transformers version dropped."""
     allowed = inspect.signature(TrainingArguments.__init__).parameters
     if "eval_strategy" not in allowed and "evaluation_strategy" in allowed:
         kwargs["evaluation_strategy"] = kwargs.pop("eval_strategy")
@@ -56,7 +57,7 @@ def build_args(**kwargs):
 def load_split(name, limit=0):
     path = os.path.join(DATA_DIR, f"{name}.csv")
     if not os.path.exists(path):
-        raise FileNotFoundError(f"Missing {path}. Run data.py (Person 1) first.")
+        raise FileNotFoundError(f"Missing {path}. Run data.py first.")
     df = pd.read_csv(path)
     if limit:
         df = df.sample(n=min(limit, len(df)), random_state=SEED).reset_index(drop=True)
@@ -140,11 +141,11 @@ def main():
     trainer.save_model(args.out)
     tokenizer.save_pretrained(args.out)
 
-    print("\n" + "=" * 60)
+    print("")
     print(f"saved to {args.out}  (gpu={use_gpu})")
     print(f"best val f1={final['eval_f1']:.4f}  recall={final['eval_recall']:.4f}  "
           f"fpr={final['eval_false_positive_rate']:.4f}")
-    print("=" * 60)
+    print("-" * 40)
     print("train.py finished.")
 
 

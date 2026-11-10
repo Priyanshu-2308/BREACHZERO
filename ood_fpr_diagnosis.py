@@ -1,14 +1,4 @@
-"""
-Task 4 for Person 4: OOD False Positive Diagnosis
-Diagnoses why transformers flag 36-38% of benign prompts in data/ood_jailbreak.csv.
-
-Without training on this held-out file:
-- Scores label-0 rows with English DistilBERT and splits into flagged (P>=0.5) vs not flagged (P<0.5).
-- Reports median length (characters and tokens) of both groups.
-- Finds the 15 most over-represented words in the flagged group.
-- Prints 10 example flagged prompts (truncated to 200 chars).
-- Saves summary statistics to results/ood_fpr_diagnosis.csv.
-"""
+"""Diagnoses false positives on benign prompts in ood_jailbreak.csv and writes results/ood_fpr_diagnosis.csv."""
 
 import os
 import re
@@ -38,7 +28,6 @@ def main():
     df = pd.read_csv(csv_path)
     model_dir = os.path.join(MODEL_DIR, "distilbert")
 
-    # Check if cached first_256 probabilities from long_input_check exist
     cache_path = os.path.join(RESULTS_DIR, "_ood_distilbert_probs.npy")
     if os.path.exists(cache_path):
         print(f"Loading precomputed probabilities from {cache_path}...")
@@ -50,7 +39,6 @@ def main():
     df["prob"] = all_probs
     df["flagged"] = df["prob"] >= 0.5
 
-    # Filter to benign rows (label == 0)
     benign_df = df[df["label"] == 0].copy()
     n_benign = len(benign_df)
     n_flagged = int(benign_df["flagged"].sum())
@@ -61,34 +49,30 @@ def main():
     print(f"Flagged as attack (False Positives): {n_flagged} ({fpr:.4f} FPR)")
     print(f"Correctly unflagged: {n_unflagged}")
 
-    # Tokenizer for token length calculation
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
     flagged_texts = benign_df[benign_df["flagged"]]["text"].astype(str).tolist()
     unflagged_texts = benign_df[~benign_df["flagged"]]["text"].astype(str).tolist()
 
-    # Character lengths
     char_lens_flagged = [len(t) for t in flagged_texts]
     char_lens_unflagged = [len(t) for t in unflagged_texts]
     med_char_flagged = float(np.median(char_lens_flagged))
     med_char_unflagged = float(np.median(char_lens_unflagged))
 
-    # Token lengths
     tok_lens_flagged = [len(tokenizer.encode(t, add_special_tokens=False)) for t in flagged_texts]
     tok_lens_unflagged = [len(tokenizer.encode(t, add_special_tokens=False)) for t in unflagged_texts]
     med_tok_flagged = float(np.median(tok_lens_flagged))
     med_tok_unflagged = float(np.median(tok_lens_unflagged))
 
-    print("\n" + "=" * 70)
+    print("")
     print("LENGTH COMPARISON: FLAGGED (FP) vs UNFLAGGED BENIGN PROMPTS")
-    print("=" * 70)
+    print("-" * 65)
     print(f"{'Group':<25}{'Count':>10}{'Median Chars':>16}{'Median Tokens':>16}")
-    print("-" * 70)
+    print("-" * 65)
     print(f"{'Flagged (False Positives)':<25}{n_flagged:>10}{med_char_flagged:>16.1f}{med_tok_flagged:>16.1f}")
     print(f"{'Not Flagged (True Negatives)':<25}{n_unflagged:>10}{med_char_unflagged:>16.1f}{med_tok_unflagged:>16.1f}")
-    print("=" * 70)
+    print("-" * 65)
 
-    # Word over-representation analysis
     def get_words(texts):
         words = []
         for t in texts:
@@ -105,7 +89,6 @@ def main():
     total_flagged_words = max(1, len(flagged_words))
     total_unflagged_words = max(1, len(unflagged_words))
 
-    # Compute relative frequency ratio for words appearing at least 5 times in flagged
     candidates = []
     for word, c_f in count_flagged.items():
         if c_f >= 5:
@@ -118,26 +101,24 @@ def main():
     candidates.sort(key=lambda x: x[1], reverse=True)
     top_15_words = candidates[:15]
 
-    print("\n" + "=" * 70)
+    print("")
     print("TOP 15 MOST OVER-REPRESENTED WORDS IN FLAGGED BENIGN PROMPTS")
-    print("=" * 70)
+    print("-" * 65)
     print(f"{'Rank':<6}{'Word':<20}{'Ratio':>10}{'Count in FP':>14}{'Count in TN':>14}")
-    print("-" * 70)
+    print("-" * 65)
     for i, (w, r, cf, cu) in enumerate(top_15_words, 1):
         print(f"{i:<6}{w:<20}{r:>10.2f}{cf:>14}{cu:>14}")
-    print("=" * 70)
+    print("-" * 65)
 
-    # 10 example flagged prompts truncated to 200 characters
-    print("\n" + "=" * 70)
+    print("")
     print("10 EXAMPLE FLAGGED BENIGN PROMPTS (truncated to 200 chars):")
-    print("=" * 70)
+    print("-" * 65)
     examples_for_csv = []
     for i, t in enumerate(flagged_texts[:10], 1):
         sample_short = t[:200].replace("\n", " ")
         examples_for_csv.append(sample_short)
         print(f"[{i:2d}] {sample_short}...")
 
-    # Save summary statistics to results/ood_fpr_diagnosis.csv
     records = [
         {"metric": "total_benign", "value": n_benign},
         {"metric": "flagged_false_positives", "value": n_flagged},

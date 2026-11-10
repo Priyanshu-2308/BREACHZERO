@@ -1,15 +1,4 @@
-"""
-LIME Explainability for Prompt Injection Detection (Person 5 Task 1).
-
-Uses LIME (LimeTextExplainer) with guard.predict_proba to explain 9 key model predictions:
-- Direct prompt injections (caught)
-- Disguised attacks (leetspeak, cyrillic, base64, wrapped, hindi)
-- Legitimate benign password-related queries (both true negative and false positive shortcut)
-
-Saves:
-- results/lime_examples.html (interactive HTML containing all LIME explanations)
-- results/lime_examples.png (summary publication-quality visualization of feature weights)
-"""
+"""Explains English DistilBERT predictions using LIME and saves HTML/PNG visualizations."""
 
 import os
 import numpy as np
@@ -21,9 +10,9 @@ from guard import predict_proba
 
 
 def main():
-    print("=" * 70)
-    print("STARTING LIME EXPLAINABILITY (Person 5 Task 1)")
-    print("=" * 70)
+    print("")
+    print("Starting LIME explainability")
+    print("-" * 50)
 
     model_dir = os.path.join(MODEL_DIR, "distilbert")
     if not os.path.exists(model_dir):
@@ -108,7 +97,6 @@ def main():
         print(f"  Text: '{txt}'")
         print(f"  P(Injection)={p_attack:.4f} | P(Benign)={p_benign:.4f} | Pred: {pred_label} | True: {true_lbl}")
 
-        # Explain prediction for the Injection class (label 1)
         exp = explainer.explain_instance(
             txt,
             lime_predictor,
@@ -117,7 +105,6 @@ def main():
             num_samples=350,
         )
 
-        # Collect HTML representation
         exp_html = exp.as_html()
         block = f"""
         <div style="border: 1px solid #ddd; border-radius: 8px; margin-bottom: 24px; padding: 16px; background-color: #fafafa;">
@@ -132,14 +119,12 @@ def main():
         """
         html_blocks.append(block)
 
-        # Collect top features for summary plot
         feat_weights = exp.as_list(label=1)
         fig_data.append({
             "title": f"Ex {i}: {cat}\nP(Inj)={p_attack:.2f} [{pred_label}]",
             "features": feat_weights,
         })
 
-    # Save full HTML visual report
     os.makedirs(RESULTS_DIR, exist_ok=True)
     html_path = os.path.join(RESULTS_DIR, "lime_examples.html")
     full_html = f"""
@@ -168,14 +153,13 @@ def main():
         f.write(full_html)
     print(f"\nSaved interactive LIME explanations to {html_path}")
 
-    # Generate summary PNG plot
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "ggplot")
     fig, axes = plt.subplots(3, 3, figsize=(18, 12))
     axes = axes.flatten()
 
     for i, item in enumerate(fig_data):
         ax = axes[i]
-        feats = item["features"][:5]  # Top 5 features
+        feats = item["features"][:5]
         if feats:
             words, weights = zip(*feats)
             y_pos = np.arange(len(words))
@@ -198,11 +182,10 @@ def main():
     plt.close()
     print(f"Saved LIME summary figure to {png_path}")
 
-    print("\n" + "=" * 70)
-    print("LIME EXPLAINABILITY COMPLETE")
-    print("=" * 70)
+    print("")
+    print("LIME explainability complete")
+    print("-" * 50)
 
 
 if __name__ == "__main__":
     main()
-

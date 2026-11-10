@@ -1,4 +1,4 @@
-# Single source of truth for shared paths/constants. Import from this file, never hardcode.
+"""Shared paths and configuration constants."""
 
 SEED = 42
 MAX_LEN = 256
@@ -9,3 +9,4 @@ DATA_DIR = "data"
 ATTACK_DIR = "data/attacks"
 MODEL_DIR = "models"
 RESULTS_DIR = "results"
+

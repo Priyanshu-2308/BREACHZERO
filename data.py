@@ -1,12 +1,4 @@
-"""
-Build the guard classifier's training data from Hugging Face datasets.
-
-Label convention: label = 1 means injection/attack, label = 0 means benign.
-
-Run: python data.py
-Produces: data/train.csv, data/val.csv, data/test.csv, data/ood_jailbreak.csv
-(columns: text,label,source)
-"""
+"""Downloads and curates datasets into train, val, test, and ood_jailbreak CSVs."""
 
 import os
 
@@ -21,7 +13,6 @@ N_DOLLY_BENIGN = 3000
 
 
 def load_prompt_injections():
-    """deepset/prompt-injections: columns text,label. Already 0/1, use as-is."""
     ds = load_dataset("deepset/prompt-injections")
     rows = []
     for split in ds:
@@ -32,8 +23,7 @@ def load_prompt_injections():
 
 
 def load_gandalf_attacks():
-    """Lakera/gandalf_ignore_instructions: columns text,similarity, no label column.
-    Per the brief, every row here is an attack -> label 1."""
+    # Every row in this set is an attack prompt
     ds = load_dataset("Lakera/gandalf_ignore_instructions")
     rows = []
     for split in ds:
@@ -45,7 +35,6 @@ def load_gandalf_attacks():
 
 
 def load_dolly_benign(n, seed):
-    """databricks/databricks-dolly-15k: use the 'instruction' field as text, label 0."""
     ds = load_dataset("databricks/databricks-dolly-15k")
     df = ds["train"].to_pandas()[["instruction"]].rename(columns={"instruction": "text"})
     df = df.sample(n=min(n, len(df)), random_state=seed).reset_index(drop=True)
@@ -55,8 +44,6 @@ def load_dolly_benign(n, seed):
 
 
 def load_ood_jailbreak():
-    """jackhhao/jailbreak-classification: columns prompt,type ('jailbreak'/'benign').
-    Map jailbreak -> 1, benign -> 0. This set is held out, never used for train/val/test."""
     ds = load_dataset("jackhhao/jailbreak-classification")
     rows = []
     for split in ds:
@@ -92,7 +79,7 @@ def main():
     print("Class counts per source (pre-split):")
     print(full.groupby(["source", "label"]).size())
 
-    # Stratified 70/15/15 split.
+    # Stratified 70/15/15 split
     train_df, rest_df = train_test_split(
         full, test_size=0.30, random_state=SEED, stratify=full["label"]
     )

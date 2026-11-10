@@ -1,12 +1,4 @@
-"""
-Task 3 for Person 4: Long Input Check
-Compares three strategies for long inputs on data/ood_jailbreak.csv using English DistilBERT:
-(a) first 256 tokens (default predict_proba truncation)
-(b) last 256 tokens
-(c) split into overlapping 256-token chunks and take the max score
-
-Reports recall, FPR, precision, F1, and N to results/long_input_check.csv.
-"""
+"""Compares first-256, last-256, and chunked max-pooling on long inputs in ood_jailbreak.csv."""
 
 import os
 import sys
@@ -20,12 +12,6 @@ from metrics import compute_metrics
 
 
 def score_batches(model, input_ids_list, device, batch_size=64, desc="Scoring"):
-    """
-    High-performance bucketed forward pass:
-    Sorts sequences by length to minimize padding on CPU,
-    prints progress on each batch to prevent idle timeouts,
-    then maps probabilities back to original indices.
-    """
     if not input_ids_list:
         return np.array([])
 
@@ -86,14 +72,12 @@ def evaluate_strategies():
     cls_id = tokenizer.cls_token_id
     sep_id = tokenizer.sep_token_id
 
-    # Tokenize raw inputs without special tokens
     print("Tokenizing texts to identify length distribution...", flush=True)
     all_raw_tokens = [tokenizer.encode(t, add_special_tokens=False) for t in texts]
     long_indices = [i for i, toks in enumerate(all_raw_tokens) if len(toks) > 254]
     short_indices = [i for i, toks in enumerate(all_raw_tokens) if len(toks) <= 254]
     print(f"Short texts (<=254 tokens): {len(short_indices)} | Long texts (>254 tokens): {len(long_indices)}", flush=True)
 
-    # Strategy (a): First 256 tokens
     print("\n--- Strategy (a): First 256 tokens ---", flush=True)
     first_256_ids = []
     for toks in all_raw_tokens:
@@ -101,7 +85,6 @@ def evaluate_strategies():
         first_256_ids.append([cls_id] + sub + [sep_id])
     probs_first = score_batches(model, first_256_ids, device, batch_size=64, desc="Strategy (a)")
 
-    # Strategy (b): Last 256 tokens
     print("\n--- Strategy (b): Last 256 tokens ---", flush=True)
     probs_last = np.copy(probs_first)
     if long_indices:
@@ -113,7 +96,6 @@ def evaluate_strategies():
         for i, p in zip(long_indices, long_probs_last):
             probs_last[i] = p
 
-    # Strategy (c): Overlapping 256-token chunks, max aggregation
     print("\n--- Strategy (c): Overlapping 256-token chunks ---", flush=True)
     probs_chunk = np.copy(probs_first)
     stride = 200  # 56 tokens overlap between consecutive chunks
@@ -134,14 +116,12 @@ def evaluate_strategies():
         print(f"Scoring {len(chunk_list)} chunks for the {len(long_indices)} long texts...", flush=True)
         long_chunk_probs = score_batches(model, chunk_list, device, batch_size=64, desc="Strategy (c)")
 
-        # Aggregate max per text
         text_chunk_map = {}
         for c_prob, t_i in zip(long_chunk_probs, chunk_text_idx):
             text_chunk_map.setdefault(t_i, []).append(c_prob)
         for i in long_indices:
             probs_chunk[i] = max(text_chunk_map[i])
 
-    # Evaluate each strategy at threshold 0.5
     threshold = 0.5
     strategies = [
         ("first_256", probs_first),
@@ -166,15 +146,15 @@ def evaluate_strategies():
     out_csv = os.path.join(RESULTS_DIR, "long_input_check.csv")
     out_df.to_csv(out_csv, index=False)
 
-    print("\n" + "=" * 78, flush=True)
+    print("", flush=True)
     print("LONG INPUT CHECK RESULTS (data/ood_jailbreak.csv, English DistilBERT)", flush=True)
-    print("=" * 78, flush=True)
+    print("-" * 65, flush=True)
     print(f"{'Strategy':<20}{'Recall':>10}{'FPR':>12}{'Precision':>12}{'F1':>10}{'N':>8}", flush=True)
-    print("-" * 78, flush=True)
+    print("-" * 65, flush=True)
     for r in records:
         print(f"{r['strategy']:<20}{r['recall']:>10.4f}{r['false_positive_rate']:>12.4f}"
               f"{r['precision']:>12.4f}{r['f1']:>10.4f}{r['n']:>8}", flush=True)
-    print("=" * 78, flush=True)
+    print("-" * 65, flush=True)
     print(f"Saved results to {out_csv}", flush=True)
 
 

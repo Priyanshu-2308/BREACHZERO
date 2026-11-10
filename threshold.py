@@ -1,14 +1,4 @@
-"""
-Threshold tuning and trade-off curve generation for BREACHZERO.
-
-Person 5 Task 2:
-1. Sweeps detection thresholds 0.05..0.95 on data/val.csv for the English DistilBERT model.
-2. Selects an optimal operating threshold that bounds False Positive Rate (FPR) on benign prompts <= 2.0% (0.02)
-   while maximizing detection recall on prompt injections. (Threshold is chosen on validation data only!)
-3. Evaluates the full sweep on data/test.csv and each disguise set in data/attacks/*.csv.
-4. Generates and saves results/threshold_curve.png.
-5. Writes the chosen threshold value to results/chosen_threshold.txt.
-"""
+"""Scores benign and attack prompts at many thresholds and picks one using val.csv only."""
 
 import os
 import numpy as np
@@ -21,7 +11,6 @@ from metrics import compute_metrics
 
 
 def sweep_thresholds(y_true, probs, thresholds):
-    """Compute FPR, Recall, Precision, and F1 across threshold values."""
     metrics_list = []
     for t in thresholds:
         y_pred = (probs >= t).astype(int)
@@ -32,9 +21,9 @@ def sweep_thresholds(y_true, probs, thresholds):
 
 
 def main():
-    print("=" * 70)
-    print("STARTING THRESHOLD SWEEP & TUNING (Person 5)")
-    print("=" * 70)
+    print("")
+    print("Starting threshold sweep on validation data")
+    print("-" * 50)
 
     model_dir = os.path.join(MODEL_DIR, "distilbert")
     if not os.path.exists(model_dir):
@@ -54,16 +43,13 @@ def main():
     val_probs = predict_proba(val_df["text"].astype(str).tolist(), model_dir, batch_size=64)
     val_metrics_df = sweep_thresholds(val_df["label"].values, val_probs, thresholds)
 
-    # Threshold Selection on Validation Set Only
-    # Condition: False Positive Rate on benign prompts <= 0.02 (2%)
+    # Threshold selection on val.csv only: FPR <= 0.02
     valid_candidates = val_metrics_df[val_metrics_df["false_positive_rate"] <= 0.02]
     if valid_candidates.empty:
-        # Fallback to minimum FPR candidate if none <= 0.02
         best_row = val_metrics_df.sort_values(by=["false_positive_rate", "recall"], ascending=[True, False]).iloc[0]
         chosen_thresh = float(best_row["threshold"])
         print(f"Warning: No threshold achieved FPR <= 0.02 on val. Falling back to min FPR: {chosen_thresh:.2f}")
     else:
-        # Among valid candidates, pick the one with highest recall, breaking ties with higher F1
         best_row = valid_candidates.sort_values(by=["recall", "f1", "threshold"], ascending=[False, False, True]).iloc[0]
         chosen_thresh = float(best_row["threshold"])
 
@@ -74,12 +60,10 @@ def main():
     print(f"Val F1:           {best_row['f1']:.4f}")
     print(f"Val Precision:    {best_row['precision']:.4f}")
 
-    # 2. Evaluate on Test Set
     print(f"\n2. Scoring test set ({len(test_df)} rows)...", flush=True)
     test_probs = predict_proba(test_df["text"].astype(str).tolist(), model_dir, batch_size=64)
     test_metrics_df = sweep_thresholds(test_df["label"].values, test_probs, thresholds)
 
-    # Test metrics at chosen threshold
     test_pred_chosen = (test_probs >= chosen_thresh).astype(int)
     test_chosen_metrics = compute_metrics(test_df["label"].values, test_pred_chosen)
 
@@ -89,7 +73,6 @@ def main():
     print(f"Test F1:          {test_chosen_metrics['f1']:.4f}")
     print(f"Test Precision:   {test_chosen_metrics['precision']:.4f}")
 
-    # 3. Evaluate Recall on Disguised Attacks
     attack_files = ["leetspeak", "cyrillic", "base64", "wrapped", "hindi"]
     attack_recalls = {}
     attack_chosen_recall = {}
@@ -99,32 +82,24 @@ def main():
         if os.path.exists(p):
             df_att = pd.read_csv(p)
             probs_att = predict_proba(df_att["text"].astype(str).tolist(), model_dir, batch_size=64)
-            # Recall for each threshold (all rows are label=1)
             rec_series = [(probs_att >= t).mean() for t in thresholds]
             attack_recalls[disguise] = rec_series
             attack_chosen_recall[disguise] = float((probs_att >= chosen_thresh).mean())
             print(f"  {disguise:10s} Recall @ {chosen_thresh:.2f}: {attack_chosen_recall[disguise] * 100:.2f}%")
 
-    # 4. Save chosen threshold to results/chosen_threshold.txt
     os.makedirs(RESULTS_DIR, exist_ok=True)
     thresh_out_file = os.path.join(RESULTS_DIR, "chosen_threshold.txt")
     with open(thresh_out_file, "w") as f:
         f.write(f"{chosen_thresh:.2f}\n")
     print(f"\nSaved chosen threshold to {thresh_out_file}")
 
-    # 5. Plotting results/threshold_curve.png
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "ggplot")
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
-    # Subplot 1: Validation & Test FPR vs Recall Curves across Thresholds
     ax1.plot(test_metrics_df["threshold"], test_metrics_df["recall"], label="Test Recall", color="#2b5c8f", lw=2.2)
     ax1.plot(test_metrics_df["threshold"], test_metrics_df["false_positive_rate"], label="Test FPR", color="#c23b22", lw=2.2, linestyle="--")
     ax1.plot(val_metrics_df["threshold"], val_metrics_df["false_positive_rate"], label="Val FPR", color="#e67e22", lw=1.5, linestyle=":")
-    
-    # Target FPR constraint line (2%)
     ax1.axhline(0.02, color="#7f8c8d", linestyle="--", alpha=0.7, label="2% FPR Target")
-    
-    # Mark chosen threshold
     ax1.axvline(chosen_thresh, color="#27ae60", linestyle="-.", lw=2, label=f"Chosen Threshold ({chosen_thresh:.2f})")
     ax1.scatter([chosen_thresh], [test_chosen_metrics["recall"]], color="#2b5c8f", s=80, zorder=5)
     ax1.scatter([chosen_thresh], [test_chosen_metrics["false_positive_rate"]], color="#c23b22", s=80, zorder=5)
@@ -136,7 +111,6 @@ def main():
     ax1.set_xlim(0.05, 0.95)
     ax1.legend(loc="center right", fontsize=9)
 
-    # Subplot 2: Disguised Attack Recalls vs Threshold
     colors = {"leetspeak": "#8e44ad", "cyrillic": "#e74c3c", "base64": "#3498db", "wrapped": "#16a085", "hindi": "#f39c12"}
     for disguise, rec_vals in attack_recalls.items():
         c = colors.get(disguise, "#333333")
@@ -156,12 +130,11 @@ def main():
     plt.close()
     print(f"Saved threshold curve visualization to {curve_out_file}")
 
-    print("\n" + "=" * 70)
-    print("THRESHOLD SWEEP COMPLETE")
+    print("")
+    print("Threshold sweep complete")
     print(f"Chosen threshold {chosen_thresh:.2f} satisfies benign FPR <= 2% on validation data.")
-    print("=" * 70)
+    print("-" * 50)
 
 
 if __name__ == "__main__":
     main()
-

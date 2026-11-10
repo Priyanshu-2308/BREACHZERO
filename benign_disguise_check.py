@@ -1,13 +1,4 @@
-"""
-Task 2 for Person 4: Benign Disguise Check (Disguised Benign Controls)
-Tests whether the models simply learned 'weird / obfuscated text = attack'.
-
-Takes 190 benign rows (label 0) from data/test.csv (seeded sample, random_state=SEED).
-Applies the 5 disguise functions from attacks.py: leetspeak, cyrillic, base64, wrapped, hindi.
-Saves control datasets to data/benign_disguised/{disguise}.csv (label = 0).
-Evaluates baseline, distilbert, and distilbert_multilingual on each disguise file.
-Reports FPR per model per disguise to results/benign_disguise_check.csv.
-"""
+"""Generates disguised benign controls and evaluates model false positive rates."""
 
 import os
 import joblib
@@ -106,14 +97,14 @@ def evaluate_models_on_disguised_benign(disguised_sets):
     out_csv = os.path.join(RESULTS_DIR, "benign_disguise_check.csv")
     out_df.to_csv(out_csv, index=False)
 
-    print("\n" + "=" * 70)
+    print("")
     print("BENIGN DISGUISE CHECK RESULTS (threshold = 0.5)")
-    print("=" * 70)
+    print("-" * 60)
     print(f"{'Model':<26}{'Disguise':<15}{'FPR':>10}{'N':>8}")
-    print("-" * 70)
+    print("-" * 60)
     for r in records:
         print(f"{r['model']:<26}{r['disguise']:<15}{r['false_positive_rate']:>10.4f}{r['n']:>8}")
-    print("=" * 70)
+    print("-" * 60)
     print(f"Saved results to {out_csv}")
 
 
@@ -125,4 +116,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
