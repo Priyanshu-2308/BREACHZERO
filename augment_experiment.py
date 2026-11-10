@@ -45,6 +45,15 @@ def build_augmented_datasets():
     if not os.path.exists(train_path):
         raise FileNotFoundError(f"Missing {train_path}")
 
+    all_extra_path = os.path.join(DATA_DIR, "augmented_train_extra.csv")
+    extra_files = {"all": all_extra_path}
+    for held_out in ["hindi", "base64"]:
+        extra_files[held_out] = os.path.join(DATA_DIR, f"augmented_train_extra_leave_{held_out}.csv")
+
+    if os.path.exists(all_extra_path) and os.path.exists(extra_files["hindi"]) and os.path.exists(extra_files["base64"]):
+        print(f"Reusing existing valid augmented datasets on disk ({all_extra_path}).", flush=True)
+        return extra_files
+
     train_df = pd.read_csv(train_path)
     injections_df = train_df[train_df["label"] == 1].sample(n=200, random_state=SEED).reset_index(drop=True)
     benign_df = train_df[train_df["label"] == 0].sample(n=200, random_state=SEED).reset_index(drop=True)
