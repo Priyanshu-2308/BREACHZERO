@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from config import ATTACK_DIR, DATA_DIR, MODEL_DIR, RESULTS_DIR, SEED
+from config import ATTACK_DIR, BASE_MODEL, DATA_DIR, MODEL_DIR, RESULTS_DIR, SEED
 from attacks import to_leetspeak, to_cyrillic, to_base64, to_wrapped, to_hindi
 from guard import predict_proba
 from metrics import compute_metrics
@@ -87,11 +87,9 @@ def train_augmented_model(extra_csv, out_dir, python_bin):
 
     cmd = [
         python_bin, "train.py",
-        "--model", "models/distilbert",
+        "--model", BASE_MODEL,
         "--extra_train", extra_csv,
         "--out", out_dir,
-        "--epochs", "1",
-        "--limit", "100",
     ]
     print(f"\nRunning: {' '.join(cmd)}", flush=True)
     res = subprocess.run(cmd)
