@@ -76,12 +76,14 @@ def main():
     attack_files = ["leetspeak", "cyrillic", "base64", "wrapped", "hindi"]
     attack_recalls = {}
     attack_chosen_recall = {}
+    attack_probs_dict = {}
     print(f"\n3. Scoring attack sets...", flush=True)
     for disguise in attack_files:
         p = os.path.join(ATTACK_DIR, f"{disguise}.csv")
         if os.path.exists(p):
             df_att = pd.read_csv(p)
             probs_att = predict_proba(df_att["text"].astype(str).tolist(), model_dir, batch_size=64)
+            attack_probs_dict[disguise] = probs_att
             rec_series = [(probs_att >= t).mean() for t in thresholds]
             attack_recalls[disguise] = rec_series
             attack_chosen_recall[disguise] = float((probs_att >= chosen_thresh).mean())
@@ -93,6 +95,55 @@ def main():
         f.write(f"{chosen_thresh:.2f}\n")
     print(f"\nSaved chosen threshold to {thresh_out_file}")
 
+    # 4. Generate results/threshold_summary.csv covering {0.5, chosen}
+    print("\n4. Scoring OOD and benign disguised sets for threshold summary...", flush=True)
+    ood_path = os.path.join(DATA_DIR, "ood_jailbreak.csv")
+    ood_df = pd.read_csv(ood_path)
+    ood_benign = ood_df[ood_df["label"] == 0]
+    ood_benign_probs = predict_proba(ood_benign["text"].astype(str).tolist(), model_dir, batch_size=64)
+
+    benign_disguised_probs = {}
+    for disguise in attack_files:
+        bp = os.path.join(DATA_DIR, "benign_disguised", f"{disguise}.csv")
+        bdf = pd.read_csv(bp)
+        benign_disguised_probs[disguise] = predict_proba(bdf["text"].astype(str).tolist(), model_dir, batch_size=64)
+
+    summary_records = []
+    eval_thresholds = [0.5, chosen_thresh]
+    for t in eval_thresholds:
+        # val metrics
+        val_pred = (val_probs >= t).astype(int)
+        val_m = compute_metrics(val_df["label"].values, val_pred)
+        summary_records.append({"threshold": t, "eval_set": "val", "metric": "fpr", "value": val_m["false_positive_rate"]})
+        summary_records.append({"threshold": t, "eval_set": "val", "metric": "recall", "value": val_m["recall"]})
+
+        # test metrics
+        test_pred = (test_probs >= t).astype(int)
+        test_m = compute_metrics(test_df["label"].values, test_pred)
+        summary_records.append({"threshold": t, "eval_set": "test", "metric": "fpr", "value": test_m["false_positive_rate"]})
+        summary_records.append({"threshold": t, "eval_set": "test", "metric": "recall", "value": test_m["recall"]})
+        summary_records.append({"threshold": t, "eval_set": "test", "metric": "f1", "value": test_m["f1"]})
+
+        # attack recall
+        for disguise in attack_files:
+            rec = float(np.mean(attack_probs_dict[disguise] >= t))
+            summary_records.append({"threshold": t, "eval_set": f"attack_{disguise}", "metric": "recall", "value": rec})
+
+        # ood jailbreak benign FPR
+        ood_fpr = float(np.mean(ood_benign_probs >= t))
+        summary_records.append({"threshold": t, "eval_set": "ood_jailbreak", "metric": "fpr", "value": ood_fpr})
+
+        # benign disguised FPR
+        for disguise in attack_files:
+            b_fpr = float(np.mean(benign_disguised_probs[disguise] >= t))
+            summary_records.append({"threshold": t, "eval_set": f"benign_{disguise}", "metric": "fpr", "value": b_fpr})
+
+    summary_df = pd.DataFrame(summary_records)
+    summary_path = os.path.join(RESULTS_DIR, "threshold_summary.csv")
+    summary_df.to_csv(summary_path, index=False)
+    print(f"Saved threshold summary to {summary_path}")
+
+    # 5. Plotting results/threshold_curve.png
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "ggplot")
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
