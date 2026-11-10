@@ -4,3 +4,8 @@ models/distilbert*/
 *.pt
 __pycache__/
 .ipynb_checkpoints/
+PS*.md
+OLD_PS*.md
+FIX*.md
+docs/PS*
+
