@@ -8,4 +8,5 @@ PS*.md
 OLD_PS*.md
 FIX*.md
 docs/PS*
+.gradio/
 

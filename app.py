@@ -55,15 +55,18 @@ def generate_llm_response(user_message, history):
     tokenizer, model, device = load_llm()
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for item in history:
-        if isinstance(item, (list, tuple)) and len(item) == 2:
+    for item in (history or []):
+        if isinstance(item, dict):
+            role = item.get("role")
+            content = item.get("content")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": str(content)})
+        elif isinstance(item, (list, tuple)) and len(item) == 2:
             u, a = item
             if u:
                 messages.append({"role": "user", "content": str(u)})
             if a:
                 messages.append({"role": "assistant", "content": str(a)})
-        elif isinstance(item, dict):
-            messages.append(item)
 
     messages.append({"role": "user", "content": user_message})
 
@@ -87,7 +90,7 @@ def generate_llm_response(user_message, history):
 
 def chat_handler(user_message, history, guard_enabled):
     if not user_message or not user_message.strip():
-        return history, ""
+        return history or [], ""
 
     threshold = get_chosen_threshold()
     model_dir = os.path.join(MODEL_DIR, "distilbert")
@@ -109,19 +112,24 @@ def chat_handler(user_message, history, guard_enabled):
         except Exception as e:
             bot_reply = f"*(Error invoking LLM: {str(e)})*"
 
-    history = history + [(user_message, bot_reply)]
-    return history, ""
+    new_history = list(history or [])
+    new_history.append({"role": "user", "content": user_message})
+    new_history.append({"role": "assistant", "content": bot_reply})
+    return new_history, ""
+
+
+CUSTOM_CSS = """
+.gradio-container { max-width: 960px !important; margin: auto !important; }
+.chatbox { border-radius: 12px !important; }
+"""
+
+THEME = gr.themes.Soft(primary_hue="indigo", neutral_hue="slate")
 
 
 def build_app():
     threshold = get_chosen_threshold()
 
-    custom_css = """
-    .gradio-container { max-width: 900px !important; margin: auto !important; }
-    .chatbox { border-radius: 8px !important; }
-    """
-
-    with gr.Blocks(title="BREACHZERO Demo", css=custom_css) as demo:
+    with gr.Blocks(title="BREACHZERO Demo") as demo:
         gr.Markdown(
             f"""
             # BREACHZERO: Prompt-Injection Guard Demo
@@ -140,7 +148,7 @@ def build_app():
                 info=f"Active decision threshold: {threshold:.2f}",
             )
 
-        chatbot = gr.Chatbot(label="Conversation", height=420)
+        chatbot = gr.Chatbot(label="Conversation", height=440)
 
         with gr.Row():
             msg_input = gr.Textbox(
@@ -170,7 +178,7 @@ def build_app():
             inputs=[msg_input, chatbot, guard_checkbox],
             outputs=[chatbot, msg_input],
         )
-        clear_btn.click(lambda: None, None, chatbot, queue=False)
+        clear_btn.click(lambda: [], None, chatbot, queue=False)
 
     return demo
 
@@ -178,12 +186,13 @@ def build_app():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--share", action="store_true", help="Enable public Gradio share link")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host address to bind")
     parser.add_argument("--port", type=int, default=7860, help="Local server port")
     args = parser.parse_args()
 
     demo = build_app()
-    print(f"\nStarting BREACHZERO Gradio demo on port {args.port} (share={args.share})...", flush=True)
-    demo.launch(server_name="0.0.0.0", server_port=args.port, share=args.share)
+    print(f"\nStarting BREACHZERO Gradio demo on http://{args.host}:{args.port} (share={args.share})...", flush=True)
+    demo.launch(server_name=args.host, server_port=args.port, share=args.share, theme=THEME, css=CUSTOM_CSS)
 
 
 if __name__ == "__main__":
