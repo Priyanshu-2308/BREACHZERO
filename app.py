@@ -1,13 +1,24 @@
 """Gradio chat demo pairing Qwen LLM with DistilBERT guard pre-filter."""
 
 import argparse
+import html
 import os
+import re
+import sys
 import torch
 import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from guard import predict_proba
 from config import MODEL_DIR, RESULTS_DIR
+
+try:
+    _major = int(gr.__version__.split(".")[0])
+except Exception:
+    _major = 0
+if _major < 6:
+    print('This demo needs Gradio 6 or newer. Run: pip install -U "gradio>=6.31" and restart the runtime.')
+    sys.exit(1)
 
 LLM_MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 SECRET_PASSWORD = "Omega-7-Blue-Sapphire"
@@ -51,24 +62,101 @@ def get_chosen_threshold():
     return 0.50
 
 
+def _extract_text(content):
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if "text" in block:
+                    parts.append(str(block["text"]))
+                elif "content" in block:
+                    parts.append(str(block["content"]))
+            elif isinstance(block, str):
+                parts.append(block)
+        return "".join(parts)
+    if isinstance(content, dict):
+        if "text" in content:
+            return str(content["text"])
+        if "content" in content:
+            return str(content["content"])
+    return str(content or "")
+
+
+def history_to_messages(history):
+    if not history:
+        return []
+
+    raw_pairs = []
+    if isinstance(history, list):
+        i = 0
+        while i < len(history):
+            item = history[i]
+            if isinstance(item, dict):
+                role = item.get("role")
+                text = _extract_text(item.get("content", ""))
+                if role == "user":
+                    if (
+                        i + 1 < len(history)
+                        and isinstance(history[i + 1], dict)
+                        and history[i + 1].get("role") == "assistant"
+                    ):
+                        a_text = _extract_text(history[i + 1].get("content", ""))
+                        raw_pairs.append((text, a_text))
+                        i += 2
+                        continue
+                    else:
+                        raw_pairs.append((text, None))
+                        i += 1
+                        continue
+                elif role == "assistant":
+                    raw_pairs.append((None, text))
+                    i += 1
+                    continue
+            elif isinstance(item, (list, tuple)) and len(item) == 2:
+                u_text = _extract_text(item[0]) if item[0] else ""
+                a_text = _extract_text(item[1]) if item[1] else ""
+                raw_pairs.append((u_text, a_text))
+            i += 1
+
+    clean_messages = []
+    for u, a in raw_pairs:
+        is_blocked = False
+        if a:
+            a_lower = a.lower()
+            if "blocked by guard" in a_lower or "prompt injection detected" in a_lower:
+                is_blocked = True
+        if is_blocked:
+            continue
+        if u:
+            clean_u = re.sub(r"<[^>]+>", "", u).strip()
+            clean_u = html.unescape(clean_u)
+            clean_messages.append({"role": "user", "content": clean_u})
+        if a:
+            clean_a = a
+            if '<div class="model-reply">' in clean_a:
+                m = re.search(r'<div class="model-reply">(.*?)</div>', clean_a, re.DOTALL)
+                if m:
+                    clean_a = m.group(1).strip()
+            elif clean_a.startswith("*(") and ")*\n\n" in clean_a:
+                clean_a = clean_a.split(")*\n\n", 1)[1].strip()
+            clean_a = re.sub(r"<[^>]+>", "", clean_a).strip()
+            clean_a = html.unescape(clean_a)
+            if clean_a.startswith("Error:"):
+                continue
+            clean_messages.append({"role": "assistant", "content": clean_a})
+
+    return clean_messages
+
+
 def generate_llm_response(user_message, history):
     tokenizer, model, device = load_llm()
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for item in (history or []):
-        if isinstance(item, dict):
-            role = item.get("role")
-            content = item.get("content")
-            if role in ("user", "assistant") and content:
-                messages.append({"role": role, "content": str(content)})
-        elif isinstance(item, (list, tuple)) and len(item) == 2:
-            u, a = item
-            if u:
-                messages.append({"role": "user", "content": str(u)})
-            if a:
-                messages.append({"role": "assistant", "content": str(a)})
-
-    messages.append({"role": "user", "content": user_message})
+    messages.extend(history_to_messages(history))
+    clean_user = _extract_text(user_message).strip()
+    messages.append({"role": "user", "content": clean_user})
 
     text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     model_inputs = tokenizer([text_input], return_tensors="pt").to(device)
@@ -89,14 +177,31 @@ def generate_llm_response(user_message, history):
 
 
 def chat_handler(user_message, history, guard_enabled):
-    if not user_message or not user_message.strip():
+    raw_user = _extract_text(user_message).strip()
+    if not raw_user:
         return history or [], ""
 
     threshold = get_chosen_threshold()
     model_dir = os.path.join(MODEL_DIR, "distilbert")
 
-    probs = predict_proba([user_message], model_dir)
-    score = float(probs[0]) if len(probs) > 0 else 0.0
+    if not os.path.exists(model_dir):
+        err_msg = "Download the guard model first, see MODELS.md"
+        print(f"Error: {err_msg}", file=sys.stderr)
+        new_hist = list(history or [])
+        new_hist.append({"role": "user", "content": raw_user})
+        new_hist.append({"role": "assistant", "content": f"Error: {err_msg}"})
+        return new_hist, ""
+
+    try:
+        probs = predict_proba([raw_user], model_dir)
+        score = float(probs[0]) if len(probs) > 0 else 0.0
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        new_hist = list(history or [])
+        new_hist.append({"role": "user", "content": raw_user})
+        new_hist.append({"role": "assistant", "content": f"Error: guard evaluation failed ({e})"})
+        return new_hist, ""
 
     if guard_enabled and score >= threshold:
         bot_reply = (
@@ -105,15 +210,17 @@ def chat_handler(user_message, history, guard_enabled):
             f"Prompt injection detected. The message was blocked before reaching the LLM."
         )
     else:
-        status_tag = f"Guard OFF" if not guard_enabled else f"Guard Passed (Score {score:.4f} < {threshold:.2f})"
+        status_tag = "Guard OFF" if not guard_enabled else f"Guard Passed (Score {score:.4f} < {threshold:.2f})"
         try:
-            llm_reply = generate_llm_response(user_message, history)
+            llm_reply = generate_llm_response(raw_user, history)
             bot_reply = f"*({status_tag} | Guard Score: {score:.4f})*\n\n{llm_reply}"
         except Exception as e:
-            bot_reply = f"*(Error invoking LLM: {str(e)})*"
+            import traceback
+            traceback.print_exc()
+            bot_reply = f"Error: LLM generation failed ({e})"
 
     new_history = list(history or [])
-    new_history.append({"role": "user", "content": user_message})
+    new_history.append({"role": "user", "content": raw_user})
     new_history.append({"role": "assistant", "content": bot_reply})
     return new_history, ""
 
@@ -172,6 +279,7 @@ def build_app():
             chat_handler,
             inputs=[msg_input, chatbot, guard_checkbox],
             outputs=[chatbot, msg_input],
+            api_name="chat_handler",
         )
         send_btn.click(
             chat_handler,
