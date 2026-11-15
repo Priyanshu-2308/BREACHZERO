@@ -31,23 +31,61 @@ SYSTEM_PROMPT = (
 
 # Global dictionary caches the model instance to avoid repeated GPU reloads on user turns.
 _llm_cache = {}
+_llm_load_error = None
+_low_memory = False
+_active_threshold = None
+
+
+def get_active_threshold():
+    """Return active threshold override if specified, otherwise the calibrated validation threshold."""
+    if _active_threshold is not None:
+        return _active_threshold
+    return get_chosen_threshold()
+
+
+def _format_llm_error(exc):
+    """Map memory-related exceptions to friendly guidance."""
+    err_text = str(exc).lower()
+    mem_keywords = ["paging file", "1455", "out of memory", "not enough memory"]
+    if any(k in err_text for k in mem_keywords):
+        return (
+            "The language model could not be loaded: not enough memory. "
+            "Close other programs, increase the Windows virtual memory, or run with --low-memory. "
+            "On Colab use a GPU runtime."
+        )
+    return f"Error: {str(exc)}"
 
 
 def load_llm():
     """Load and cache the protected LLM."""
+    global _llm_load_error
+    if _llm_load_error is not None:
+        raise _llm_load_error
+
     if LLM_MODEL_NAME not in _llm_cache:
-        print(f"Loading LLM '{LLM_MODEL_NAME}'...", flush=True)
-        tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_NAME)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model = AutoModelForCausalLM.from_pretrained(
-            LLM_MODEL_NAME,
-            torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-            device_map="auto" if device == "cuda" else None,
-        )
-        if device == "cpu":
-            model.to("cpu")
-        model.eval()
-        _llm_cache[LLM_MODEL_NAME] = (tokenizer, model, device)
+        try:
+            print(f"Loading LLM '{LLM_MODEL_NAME}'...", flush=True)
+            tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_NAME)
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            if device == "cuda":
+                dtype = torch.float16
+            else:
+                # Load in bfloat16 on CPU if low-memory flag is active to reduce RAM usage.
+                dtype = torch.bfloat16 if _low_memory else torch.float32
+
+            model = AutoModelForCausalLM.from_pretrained(
+                LLM_MODEL_NAME,
+                torch_dtype=dtype,
+                low_cpu_mem_usage=True,
+                device_map="auto" if device == "cuda" else None,
+            )
+            if device == "cpu":
+                model.to("cpu")
+            model.eval()
+            _llm_cache[LLM_MODEL_NAME] = (tokenizer, model, device)
+        except Exception as e:
+            _llm_load_error = e
+            raise e
     return _llm_cache[LLM_MODEL_NAME]
 
 
@@ -219,10 +257,11 @@ def highlight_password(text):
 
 def chat_handler(user_message, history, guard_enabled):
     """Process a user message through the guard filter and model."""
+    global _llm_load_error
     if not user_message or not user_message.strip():
         return history or [], ""
 
-    threshold = get_chosen_threshold()
+    threshold = get_active_threshold()
     model_dir = os.path.join(MODEL_DIR, "distilbert")
 
     if not os.path.isdir(model_dir):
@@ -255,14 +294,24 @@ def chat_handler(user_message, history, guard_enabled):
             f'</div>'
         )
     else:
+        # Check if model loading already failed previously to avoid re-attempting on every turn.
+        if _llm_load_error is not None:
+            msg = _format_llm_error(_llm_load_error)
+            new_history = list(history or [])
+            new_history.append({"role": "user", "content": html.escape(user_message)})
+            new_history.append({"role": "assistant", "content": f'<div class="error-card">{msg}</div>'})
+            return new_history, ""
+
         try:
             raw_reply = generate_llm_response(user_message, history)
         except Exception as e:
+            _llm_load_error = e
             import traceback
             traceback.print_exc()
+            msg = _format_llm_error(e)
             new_history = list(history or [])
             new_history.append({"role": "user", "content": html.escape(user_message)})
-            new_history.append({"role": "assistant", "content": f'<div class="error-card">Error: {str(e)}</div>'})
+            new_history.append({"role": "assistant", "content": f'<div class="error-card">{msg}</div>'})
             return new_history, ""
 
         leaked = check_password_leak(raw_reply)
@@ -814,9 +863,15 @@ function fillInput(text) {
 """
 
 
-def build_app():
+def build_app(threshold=None, low_memory=False):
     """Build the demo Blocks interface."""
-    threshold = get_chosen_threshold()
+    global _active_threshold, _low_memory
+    if threshold is not None:
+        _active_threshold = float(threshold)
+    if low_memory:
+        _low_memory = True
+
+    active_thresh = get_active_threshold()
 
     with gr.Blocks(title="BREACHZERO") as demo:
         with gr.Row(elem_id="top-header"):
@@ -840,7 +895,7 @@ def build_app():
                     container=False,
                 )
                 gr.HTML(
-                    f'<div class="threshold-chip-view">Threshold {threshold:.2f}</div>'
+                    f'<div class="threshold-chip-view">Threshold {active_thresh:.2f}</div>'
                 )
 
         with gr.Column(elem_classes=["main-column"]):
@@ -902,9 +957,13 @@ def main():
     parser.add_argument("--share", action="store_true", help="Enable public Gradio share link")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host address to bind")
     parser.add_argument("--port", type=int, default=7860, help="Local server port")
+    parser.add_argument("--threshold", type=float, default=None, help="Override guard decision threshold")
+    parser.add_argument("--low-memory", action="store_true", help="Load LLM on CPU using bfloat16 and low_cpu_mem_usage")
     args = parser.parse_args()
 
-    demo = build_app()
+    demo = build_app(threshold=args.threshold, low_memory=args.low_memory)
+    active_thresh = get_active_threshold()
+    print(f"Active threshold: {active_thresh:.2f}", flush=True)
     print(f"\nStarting BREACHZERO demo on http://{args.host}:{args.port} (share={args.share})...", flush=True)
     demo.launch(server_name=args.host, server_port=args.port, share=args.share, css=CUSTOM_CSS)
 
