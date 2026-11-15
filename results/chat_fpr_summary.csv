@@ -1,0 +1,3 @@
+threshold,false_positive_rate,n
+0.06,0.21666666666666667,60
+0.5,0.15,60
