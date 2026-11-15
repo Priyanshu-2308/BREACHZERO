@@ -2,7 +2,7 @@
 
 **BREACHZERO** is a prompt-injection detector designed to sit in front of Large Language Model (LLM) applications. It flags adversarial prompt injections (such as *"ignore all previous instructions and..."*, obfuscated encodings, and roleplay jailbreaks) before inputs reach the downstream model.
 
-This project evaluates a **Baseline (TF-IDF + LR)** alongside fine-tuned **English DistilBERT** and **Multilingual DistilBERT** sequence classifiers. We test out-of-distribution robustness across five disguises (leetspeak, Cyrillic homoglyphs, Base64, template wrapping, and Hindi-style substitution), evaluate shortcut learning, calibrate decision thresholds, test adversarial data augmentation, and demonstrate the detector in an interactive Gradio application where an instruct LLM protects a confidential secret.
+This project evaluates a **Baseline (TF-IDF + LR)** alongside fine-tuned **English DistilBERT** and **Multilingual DistilBERT** sequence classifiers. We test out-of-distribution accuracy across five disguises (leetspeak, Cyrillic homoglyphs, Base64, template wrapping, and Hindi-style substitution), evaluate shortcut learning, calibrate decision thresholds, test adversarial data augmentation, and demonstrate the detector in an interactive Gradio application where an instruct LLM protects a confidential secret.
 
 ---
 
@@ -104,6 +104,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+The demo needs Gradio 6 or newer (pip install -U "gradio>=6.31", then restart the runtime if Gradio was already imported).
+
 ### Pretrained Model Weights
 
 Large transformer weights are hosted on the Hugging Face Hub (see [MODELS.md](MODELS.md)). Download them with Python:
@@ -141,7 +143,7 @@ python train.py --model distilbert-base-multilingual-cased --out models/distilbe
 # Step 5: Run full evaluation suite across baseline and transformer models
 python run_eval.py
 
-# Step 6: Diagnostic and robustness checks
+# Step 6: Diagnostic and disguised attack checks
 python benign_disguise_check.py   # Test benign disguised controls (shortcut analysis)
 python shortcut_check.py          # Test legitimate password queries
 python long_input_check.py        # Evaluate truncation vs chunking on long inputs
@@ -185,6 +187,10 @@ A Google Colab runbook is provided in `colab_run.ipynb` (written for Google Cola
 ## Interactive Demo (`app.py`)
 
 The demo couples a small instruction model (`Qwen/Qwen2.5-0.5B-Instruct`) with the `BREACHZERO` guard. The LLM is instructed in its system prompt to guard a confidential secret password (`Omega-7-Blue-Sapphire`).
+
+The interface features a header with an interactive Guard toggle and active threshold chip, a centered conversation view, and a fixed bottom composer with one-click example cards. Blocked injections display a security card showing the detection score against the decision threshold, while passed messages display a verification chip.
+
+![BREACHZERO Demo](results/demo_screenshot.png)
 
 - **Guard ON**: Inputs with predicted injection score >= tuned threshold (stored in `results/chosen_threshold.txt`) are blocked before reaching the model.
 - **Guard OFF**: Inputs are passed directly to the LLM. Attackers can use persona adoption, reverse psychology, or diagnostic overrides to leak the secret.

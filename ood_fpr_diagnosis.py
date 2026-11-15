@@ -10,6 +10,7 @@ from transformers import AutoTokenizer
 from config import DATA_DIR, MODEL_DIR, RESULTS_DIR
 from guard import predict_proba
 
+# Standard English stop words are filtered out so domain-specific tokens stand out clearly.
 STOPWORDS = {
     "the", "and", "to", "of", "a", "in", "is", "that", "for", "it", "as", "was",
     "with", "on", "are", "by", "this", "be", "or", "from", "at", "an", "your",
@@ -28,6 +29,7 @@ def main():
     df = pd.read_csv(csv_path)
     model_dir = os.path.join(MODEL_DIR, "distilbert")
 
+    # Precomputed probabilities are cached to avoid re-scoring thousands of OOD prompts.
     cache_path = os.path.join(RESULTS_DIR, "_ood_distilbert_probs.npy")
     if os.path.exists(cache_path):
         print(f"Loading precomputed probabilities from {cache_path}...")
@@ -59,6 +61,7 @@ def main():
     med_char_flagged = float(np.median(char_lens_flagged))
     med_char_unflagged = float(np.median(char_lens_unflagged))
 
+    # Median token and character lengths are compared to test if input length correlates with false alarms.
     tok_lens_flagged = [len(tokenizer.encode(t, add_special_tokens=False)) for t in flagged_texts]
     tok_lens_unflagged = [len(tokenizer.encode(t, add_special_tokens=False)) for t in unflagged_texts]
     med_tok_flagged = float(np.median(tok_lens_flagged))
@@ -89,6 +92,7 @@ def main():
     total_flagged_words = max(1, len(flagged_words))
     total_unflagged_words = max(1, len(unflagged_words))
 
+    # Token frequency ratios highlight vocabulary disproportionately present in false positive prompts.
     candidates = []
     for word, c_f in count_flagged.items():
         if c_f >= 5:

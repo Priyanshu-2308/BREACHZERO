@@ -18,12 +18,13 @@ def main():
     if not os.path.exists(model_dir):
         raise FileNotFoundError(f"Model directory not found: {model_dir}")
 
-    # LIME expects a function mapping list of strings -> (n, 2) array: [P(benign), P(attack)]
+    # LIME requires two-class probability distributions to fit its local surrogate linear model.
     def lime_predictor(texts):
         probs_attack = predict_proba(texts, model_dir, batch_size=32)
         probs_benign = 1.0 - probs_attack
         return np.column_stack([probs_benign, probs_attack])
 
+    # Set random seed so word perturbations produce consistent feature attribution weights.
     explainer = LimeTextExplainer(
         class_names=["Benign", "Injection"],
         feature_selection="auto",
@@ -97,6 +98,7 @@ def main():
         print(f"  Text: '{txt}'")
         print(f"  P(Injection)={p_attack:.4f} | P(Benign)={p_benign:.4f} | Pred: {pred_label} | True: {true_lbl}")
 
+        # 350 perturbation samples balance surrogate fidelity with explanation runtime.
         exp = explainer.explain_instance(
             txt,
             lime_predictor,
@@ -177,6 +179,7 @@ def main():
 
     plt.suptitle("LIME Feature Attributions on Key Injection & Benign Inputs", fontsize=14, fontweight="bold", y=1.00)
     plt.tight_layout()
+    # Both interactive HTML and static bar charts are saved for reporting and documentation.
     png_path = os.path.join(RESULTS_DIR, "lime_examples.png")
     plt.savefig(png_path, dpi=300, bbox_inches="tight")
     plt.close()

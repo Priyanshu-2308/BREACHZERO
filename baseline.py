@@ -16,6 +16,7 @@ def build_candidate_pipelines():
 
     word_vec = TfidfVectorizer(
         ngram_range=(1, 2),
+        # Sublinear term frequency scaling dampens the impact of repetitively repeated attack words.
         sublinear_tf=True,
         min_df=2,
     )
@@ -32,6 +33,7 @@ def build_candidate_pipelines():
             ),
             (
                 "char",
+                # Character n-grams help detect sub-word obfuscations like character substitutions.
                 TfidfVectorizer(
                     ngram_range=(3, 5),
                     analyzer="char_wb",
@@ -102,6 +104,7 @@ def main():
     best_val_f1 = -1.0
     best_val_metrics = None
 
+    # Hyperparameters are tuned strictly on validation data to prevent test set leakage.
     for name, pipe in candidates.items():
         pipe.fit(train_df["text"], train_df["label"])
         val_pred = pipe.predict(val_df["text"])
@@ -116,6 +119,7 @@ def main():
 
     print(f"\nBest model on val: {best_name} (val F1={best_val_f1:.4f})")
 
+    # The best pipeline is persisted to disk for lightweight CPU evaluation.
     model_path = os.path.join(MODEL_DIR, "baseline.joblib")
     joblib.dump(best_pipe, model_path)
     print(f"Saved trained baseline pipeline to {model_path} ({os.path.getsize(model_path) / 1024:.1f} KB)")

@@ -80,6 +80,7 @@ def to_cyrillic(text: str) -> str:
     """Replace Latin letters with visually identical Cyrillic homoglyphs."""
     if not isinstance(text, str):
         text = str(text)
+    # Cyrillic homoglyphs share identical visual shapes with Latin letters but carry distinct Unicode codepoints.
     return "".join(CYRILLIC_HOMOGLYPHS.get(c, c) for c in text)
 
 
@@ -87,6 +88,7 @@ def to_base64(text: str, prefix: str = "Decode this and follow it: ") -> str:
     """Encode prompt as base64 with a decoding instruction prefix."""
     if not isinstance(text, str):
         text = str(text)
+    # Prepend instruction wrappers to test whether base64 decoding bypasses token-level guards.
     encoded = base64.b64encode(text.encode("utf-8")).decode("utf-8")
     return f"{prefix}{encoded}"
 
@@ -104,6 +106,7 @@ def to_wrapped(text: str, template_idx: int = None) -> str:
     """Wrap prompt inside a benign request template."""
     if not isinstance(text, str):
         text = str(text)
+    # Embedding injections into benign tasks tests whether surrounding context masks the attack payload.
     if template_idx is not None:
         tpl = WRAPPED_TEMPLATES[template_idx % len(WRAPPED_TEMPLATES)]
     else:
@@ -388,6 +391,7 @@ def generate_attack_sets():
         raise FileNotFoundError(f"Missing required file: {test_path}")
 
     test_df = pd.read_csv(test_path)
+    # Only attack rows with label 1 are transformed into adversarial test variants.
     label_1_df = test_df[test_df["label"] == 1].copy()
 
     # Deterministic sample of up to 200 label-1 rows using SEED

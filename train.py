@@ -43,6 +43,7 @@ def hf_metrics(eval_pred):
 
 
 def build_args(**kwargs):
+    # Inspect signature to stay compatible across different transformers library versions.
     allowed = inspect.signature(TrainingArguments.__init__).parameters
     if "eval_strategy" not in allowed and "evaluation_strategy" in allowed:
         kwargs["evaluation_strategy"] = kwargs.pop("eval_strategy")
@@ -74,6 +75,7 @@ def main():
     ap.add_argument("--limit", type=int, default=0, help="subsample train/val rows (0 = use all); for smoke tests")
     args = ap.parse_args()
 
+    # Set global seed to ensure reproducible weight initialization and mini-batch ordering.
     set_seed(SEED)
 
     train_df = load_split("train", args.limit)
@@ -91,12 +93,14 @@ def main():
             extra = extra.sample(n=min(args.limit, len(extra)), random_state=SEED)
         n_extra = len(extra)
         train_df = pd.concat([train_df[["text", "label"]], extra[["text", "label"]]], ignore_index=True)
+        # Shuffling ensures augmented rows are distributed evenly throughout mini-batches.
         train_df = train_df.sample(frac=1.0, random_state=SEED).reset_index(drop=True)
 
     print(f"model={args.model}  train={len(train_df)} (extra={n_extra})  val={len(val_df)}  max_len={args.max_len}")
     print("train label counts:", train_df["label"].value_counts().to_dict())
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
+    # Sequence classification head maps pooled representations to binary injection logits.
     model = AutoModelForSequenceClassification.from_pretrained(args.model, num_labels=2)
 
     train_ds = TextDataset(train_df["text"].astype(str).tolist(), train_df["label"].astype(int).tolist(),

@@ -16,6 +16,7 @@ def score_batches(model, input_ids_list, device, batch_size=64, desc="Scoring"):
         return np.array([])
 
     total = len(input_ids_list)
+    # Sorting sequences by length before batching reduces unnecessary padding tokens.
     indexed = sorted(enumerate(input_ids_list), key=lambda x: len(x[1]))
     probs_ordered = [0.0] * total
     n_batches = (total + batch_size - 1) // batch_size
@@ -80,6 +81,7 @@ def evaluate_strategies():
 
     print("\n--- Strategy (a): First 256 tokens ---", flush=True)
     first_256_ids = []
+    # Reserve two token slots for the mandatory CLS and SEP special tokens.
     for toks in all_raw_tokens:
         sub = toks[:254]
         first_256_ids.append([cls_id] + sub + [sep_id])
@@ -98,6 +100,7 @@ def evaluate_strategies():
 
     print("\n--- Strategy (c): Overlapping 256-token chunks ---", flush=True)
     probs_chunk = np.copy(probs_first)
+    # Overlapping chunks ensure adversarial payloads spanning chunk boundaries are not split and missed.
     stride = 200  # 56 tokens overlap between consecutive chunks
     if long_indices:
         chunk_list = []
@@ -120,6 +123,7 @@ def evaluate_strategies():
         for c_prob, t_i in zip(long_chunk_probs, chunk_text_idx):
             text_chunk_map.setdefault(t_i, []).append(c_prob)
         for i in long_indices:
+            # Max-pooling across chunks flags the document if any window triggers the guard threshold.
             probs_chunk[i] = max(text_chunk_map[i])
 
     threshold = 0.5

@@ -11,6 +11,7 @@ from metrics import compute_metrics
 
 
 def sweep_thresholds(y_true, probs, thresholds):
+    # Sweep a dense grid of cutoffs to map the full recall and false-positive tradeoff curve.
     metrics_list = []
     for t in thresholds:
         y_pred = (probs >= t).astype(int)
@@ -41,9 +42,10 @@ def main():
 
     print(f"\n1. Scoring validation set ({len(val_df)} rows)...", flush=True)
     val_probs = predict_proba(val_df["text"].astype(str).tolist(), model_dir, batch_size=64)
+    # The decision threshold is selected strictly on val.csv to avoid test set data leakage.
     val_metrics_df = sweep_thresholds(val_df["label"].values, val_probs, thresholds)
 
-    # Threshold selection on val.csv only: FPR <= 0.02
+    # Candidate threshold search bounds FPR <= 2% to minimize rejections of innocent user prompts.
     valid_candidates = val_metrics_df[val_metrics_df["false_positive_rate"] <= 0.02]
     if valid_candidates.empty:
         best_row = val_metrics_df.sort_values(by=["false_positive_rate", "recall"], ascending=[True, False]).iloc[0]
@@ -90,6 +92,7 @@ def main():
             print(f"  {disguise:10s} Recall @ {chosen_thresh:.2f}: {attack_chosen_recall[disguise] * 100:.2f}%")
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
+    # Tuned threshold is saved to text file so the demo app can read it directly.
     thresh_out_file = os.path.join(RESULTS_DIR, "chosen_threshold.txt")
     with open(thresh_out_file, "w") as f:
         f.write(f"{chosen_thresh:.2f}\n")

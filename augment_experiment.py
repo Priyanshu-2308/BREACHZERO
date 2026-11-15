@@ -37,11 +37,13 @@ def build_augmented_datasets():
         return extra_files
 
     train_df = pd.read_csv(train_path)
+    # Sample equal numbers of injections and benign prompts to keep augmentation balanced.
     injections_df = train_df[train_df["label"] == 1].sample(n=200, random_state=SEED).reset_index(drop=True)
     benign_df = train_df[train_df["label"] == 0].sample(n=200, random_state=SEED).reset_index(drop=True)
     print(f"Sampled 200 injections and 200 benign prompts from {train_path} for augmentation.", flush=True)
 
     pool = []
+    # Including disguised benign samples prevents the classifier from treating formatting alone as an attack.
     for name, fn in DISGUISE_FNS.items():
         for t in injections_df["text"]:
             pool.append({"text": fn(t), "label": 1, "disguise_type": name})
@@ -82,6 +84,7 @@ def train_augmented_model(extra_csv, out_dir, python_bin):
     if res.returncode != 0:
         raise RuntimeError(f"Training failed for {out_dir}")
 
+    # Intermediate checkpoints are deleted to save storage once the final model is saved.
     if os.path.exists(ckpt_dir):
         shutil.rmtree(ckpt_dir, ignore_errors=True)
 
@@ -105,6 +108,7 @@ def evaluate_model_on_suite(model_name, model_dir):
             "n": len(df),
         })
 
+    # Standard test FPR is tracked to verify augmentation does not increase false alarms on clean prompts.
     test_df = pd.read_csv(os.path.join(DATA_DIR, "test.csv"))
     probs_test = predict_proba(test_df["text"].astype(str).tolist(), model_dir, batch_size=64)
     y_pred_test = (probs_test >= threshold).astype(int)

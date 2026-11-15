@@ -17,7 +17,7 @@ Author contributions recorded from git commit history:
 - **Samarth:** Dataset ingestion, cleaning, split creation, and central configuration (`data.py`, `config.py`).
 - **Prashant:** Adversarial disguise generators and TF-IDF plus Logistic Regression baseline (`attacks.py`, `baseline.py`).
 - **Sarthak:** DistilBERT and Multilingual DistilBERT fine-tuning and evaluation harness (`train.py`, `run_eval.py`, `metrics.py`, `colab_run.ipynb`).
-- **Shivam:** Robustness diagnostics (keyword shortcut check, long input strategies, benign disguise controls, false-positive token analysis, initial augmentation run).
+- **Shivam:** Disguised attack diagnostics (keyword shortcut check, long input strategies, benign disguise controls, false-positive token analysis, initial augmentation run).
 - **Priyanshu:** Full adversarial augmentation re-run, LIME explainability, validation threshold calibration, interactive Gradio demo, report, and repository cleanup (`augment_experiment.py`, `explain.py`, `threshold.py`, `app.py`, `demo_check.py`, `REPORT.md`, `README.md`).
 
 ---

@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 
 from config import DATA_DIR, SEED
 
+# Subsample 3000 Dolly instructions to balance attack prompts with varied non-adversarial user tasks.
 N_DOLLY_BENIGN = 3000
 
 
@@ -57,6 +58,7 @@ def load_ood_jailbreak():
 
 def clean(df):
     df = df.copy()
+    # Dropping duplicates and empty strings prevents memorization artifacts.
     df["text"] = df["text"].astype(str).str.strip()
     df = df[df["text"] != ""]
     df = df.drop_duplicates(subset=["text"])
@@ -79,7 +81,7 @@ def main():
     print("Class counts per source (pre-split):")
     print(full.groupby(["source", "label"]).size())
 
-    # Stratified 70/15/15 split
+    # Stratification preserves equal label ratios across train, val, and test splits.
     train_df, rest_df = train_test_split(
         full, test_size=0.30, random_state=SEED, stratify=full["label"]
     )
@@ -91,6 +93,7 @@ def main():
     val_df.to_csv(os.path.join(DATA_DIR, "val.csv"), index=False)
     test_df.to_csv(os.path.join(DATA_DIR, "test.csv"), index=False)
 
+    # The OOD jailbreak set is isolated completely from training to test domain transfer.
     ood_df = clean(load_ood_jailbreak())
     ood_df.to_csv(os.path.join(DATA_DIR, "ood_jailbreak.csv"), index=False)
 

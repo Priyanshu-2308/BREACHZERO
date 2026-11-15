@@ -11,6 +11,7 @@ def compute_metrics(y_true, y_pred):
     n = int(len(y_true))
 
     num_neg = np.sum(y_true == 0)
+    # When evaluating attack-only sets without negative samples, FPR is mathematically undefined and returns NaN.
     if num_neg == 0:
         fpr = float("nan")
     else:
@@ -18,15 +19,18 @@ def compute_metrics(y_true, y_pred):
         fpr = float(fp / num_neg)
 
     num_pos = np.sum(y_true == 1)
+    # Positive class metrics are undefined when evaluating benign-only control sets.
     if num_pos == 0:
         recall = float("nan")
         precision = float("nan")
         f1 = float("nan")
     else:
+        # Zero division parameter suppresses calculation warnings when no instances are predicted positive.
         recall = float(recall_score(y_true, y_pred, pos_label=1, zero_division=0))
         precision = float(precision_score(y_true, y_pred, pos_label=1, zero_division=0))
         f1 = float(f1_score(y_true, y_pred, pos_label=1, zero_division=0))
 
+    # Metric keys are standardized to ensure consistent reporting across all evaluation scripts.
     return {
         "recall": recall,
         "false_positive_rate": fpr,

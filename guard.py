@@ -6,6 +6,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from config import MAX_LEN
 
+# Cache loaded tokenizers and models in memory to avoid disk reload overhead on repeated calls.
 _cache = {}
 
 
@@ -15,6 +16,7 @@ def _load(model_dir):
         model = AutoModelForSequenceClassification.from_pretrained(model_dir)
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model.to(device)
+        # Evaluation mode disables dropout layers during probability scoring.
         model.eval()
         _cache[model_dir] = (tok, model, device)
     return _cache[model_dir]
@@ -28,12 +30,14 @@ def predict_proba(texts, model_dir, batch_size=32, max_len=MAX_LEN):
 
     tok, model, device = _load(model_dir)
     probs = []
+    # Inference runs under no_grad to reduce memory usage and speed up forward passes.
     with torch.no_grad():
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             enc = tok(batch, truncation=True, max_length=max_len,
                       padding=True, return_tensors="pt").to(device)
             logits = model(**enc).logits
+            # Column index 1 corresponds to the predicted probability of the prompt injection class.
             probs.append(torch.softmax(logits, dim=-1)[:, 1].cpu().numpy())
 
     return np.concatenate(probs) if probs else np.array([])

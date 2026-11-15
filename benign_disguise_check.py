@@ -22,6 +22,7 @@ def generate_benign_disguised_sets():
     test_df = pd.read_csv(test_path)
     benign_df = test_df[test_df["label"] == 0].copy()
 
+    # Sample 190 benign prompts to match the sample size of the disguised attack sets.
     n_sample = min(190, len(benign_df))
     sample_df = benign_df.sample(n=n_sample, random_state=SEED).reset_index(drop=True)
     print(f"Sampled {n_sample} benign prompts from {test_path} (random_state={SEED}).")
@@ -37,6 +38,7 @@ def generate_benign_disguised_sets():
     created_files = {}
     for disguise_name, gen_fn in generators.items():
         transformed = [gen_fn(t) for t in sample_df["text"]]
+        # Labels remain 0 because benign prompts contain no adversarial intent.
         df_disguised = pd.DataFrame({
             "text": transformed,
             "label": 0,
@@ -54,6 +56,7 @@ def generate_benign_disguised_sets():
 def evaluate_models_on_disguised_benign(disguised_sets):
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
+    # A high false positive rate here reveals the model relies on formatting rather than semantics.
     models = [
         ("baseline", os.path.join(MODEL_DIR, "baseline.joblib")),
         ("distilbert", os.path.join(MODEL_DIR, "distilbert")),
@@ -93,6 +96,7 @@ def evaluate_models_on_disguised_benign(disguised_sets):
                     "n": len(df),
                 })
 
+    # Results are saved to CSV to evaluate false alarm rates across each disguise type.
     out_df = pd.DataFrame(records)
     out_csv = os.path.join(RESULTS_DIR, "benign_disguise_check.csv")
     out_df.to_csv(out_csv, index=False)

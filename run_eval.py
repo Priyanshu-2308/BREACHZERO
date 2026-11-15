@@ -13,6 +13,7 @@ ATTACKS = ["leetspeak", "cyrillic", "base64", "wrapped", "hindi"]
 
 
 def load_eval_sets():
+    # Test sets include in-distribution test, out-of-distribution jailbreak, and disguised attacks.
     sets = []
     for name in ["test", "ood_jailbreak"]:
         path = os.path.join(DATA_DIR, f"{name}.csv")
@@ -29,6 +30,7 @@ def load_eval_sets():
 
 def score(model_name, model_path, df):
     texts = df["text"].astype(str).tolist()
+    # Extract positive class probability so binary decision thresholds can be applied.
     if model_name == "baseline":
         pipe = joblib.load(model_path)
         return pipe.predict_proba(texts)[:, 1]
@@ -44,6 +46,7 @@ def main():
     os.makedirs(RESULTS_DIR, exist_ok=True)
     eval_sets = load_eval_sets()
 
+    # Compare linear baseline against monolingual and multilingual transformer architectures.
     models = [
         ("baseline", os.path.join(MODEL_DIR, "baseline.joblib")),
         ("distilbert", os.path.join(MODEL_DIR, "distilbert")),
@@ -63,6 +66,7 @@ def main():
             print(f"SKIP {model_name}: could not run it ({type(e).__name__}: {e})")
             continue
         for (set_name, df), probs in zip(eval_sets, all_probs):
+            # Convert continuous scores to binary predictions using the specified decision boundary.
             y_pred = (probs >= args.threshold).astype(int)
             m = compute_metrics(df["label"].values, y_pred)
             m.pop("precision")
