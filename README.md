@@ -54,7 +54,10 @@ BREACHZERO/
 │   ├── threshold_curve.png               # Threshold trade-off curves
 │   ├── threshold_summary.csv             # Threshold metrics at 0.50 and 0.06
 │   ├── chosen_threshold.txt              # Tuned decision threshold (val FPR <= 2%)
-│   ├── demo_check.csv                    # Reproducible demo verification results
+│   ├── demo_check.csv                    # Reproducible demo verification results (threshold 0.06)
+│   ├── demo_check_t050.csv               # Demo verification results at threshold 0.50
+│   ├── chat_fpr_check.csv                # Harmless chat prompt evaluation scores
+│   ├── chat_fpr_summary.csv              # Chat false positive rates at 0.06 and 0.50
 │   └── lime_examples.html & .png         # LIME feature attribution visualizations
 ├── config.py                             # Central source of truth for paths & constants
 ├── guard.py                              # Cached inference interface: predict_proba()
@@ -72,6 +75,7 @@ BREACHZERO/
 ├── explain.py                            # LIME explainability script
 ├── app.py                                # Interactive Gradio chat demo
 ├── demo_check.py                         # Reproducible demo verification script
+├── chat_fpr_check.py                     # Evaluates false-positive rate on plain chat prompts
 ├── colab_run.ipynb                       # Google Colab notebook for training and eval
 ├── MODELS.md                             # Model repository links and download commands
 ├── REPORT.md                             # Technical project report
@@ -148,6 +152,7 @@ python benign_disguise_check.py   # Test benign disguised controls (shortcut ana
 python shortcut_check.py          # Test legitimate password queries
 python long_input_check.py        # Evaluate truncation vs chunking on long inputs
 python ood_fpr_diagnosis.py       # Analyze top tokens triggering false positives on OOD data
+python chat_fpr_check.py          # Measure false-positive rate on plain chat prompts
 
 # Step 7: Adversarial augmentation experiment
 python augment_experiment.py      # Trains leave-one-out models and evaluates recovery
@@ -159,7 +164,8 @@ python threshold.py               # Sweeps val.csv to select threshold bounding 
 python explain.py                 # Generates HTML and PNG feature attribution plots
 
 # Step 10: Interactive Gradio Demo & Verification
-python demo_check.py              # Test demo prompts with guard ON and OFF
+python demo_check.py              # Test demo prompts with guard ON and OFF (threshold 0.06)
+python demo_check.py --threshold 0.5 # Test demo prompts at threshold 0.50
 python app.py                     # Launch chat demo (pass --share for public URL)
 ```
 
@@ -195,3 +201,20 @@ The interface features a header with an interactive Guard toggle and active thre
 - **Guard ON**: Inputs with predicted injection score >= tuned threshold (stored in `results/chosen_threshold.txt`) are blocked before reaching the model.
 - **Guard OFF**: Inputs are passed directly to the LLM. Attackers can use persona adoption, reverse psychology, or diagnostic overrides to leak the secret.
 - **Interactive Examples**: Pre-configured buttons provide instant test cases for direct injection, wrapped injection, and legitimate benign requests.
+
+The default threshold (0.06) was chosen on the validation set to limit false alarms on the project's own benign data, but on everyday chat messages it blocks many harmless prompts: on 60 harmless chat prompts, the false-positive rate is 21.67% at threshold 0.06 and 15.00% at threshold 0.50 (see `results/chat_fpr_summary.csv`). For an interactive demo session, run:
+```bash
+python app.py --share --threshold 0.5
+```
+
+---
+
+## Troubleshooting
+
+- **Gradio version**: The demo needs Gradio 6 or newer (`pip install -U "gradio>=6.31"`, then restart the runtime).
+- **Windows virtual memory (`os error 1455`)**: On Windows, `The paging file is too small for this operation to complete (os error 1455)` means the system ran out of virtual memory while loading the language model. To fix this:
+  - Close other memory-heavy programs.
+  - Increase the Windows paging file (System Properties -> Advanced -> Performance Settings -> Advanced -> Virtual memory -> Change -> set custom size to 8192 MB initial and 16384 MB maximum, click Set and restart).
+  - Or run with `--low-memory` (`python app.py --low-memory`), which loads the model in `bfloat16` on CPU.
+  - Or run on Google Colab with a GPU runtime.
+- **First message delay**: The guard model is cached on startup, but the language model is loaded lazily on the first prompt that reaches it. The first reply takes a few seconds longer while weights load into memory.

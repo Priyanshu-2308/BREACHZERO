@@ -3,11 +3,13 @@
 Saves results to results/demo_check.csv.
 """
 
+import argparse
 import os
 import pandas as pd
 import torch
 from transformers import set_seed
 
+import app
 from app import (
     SECRET_PASSWORD,
     generate_llm_response,
@@ -24,15 +26,18 @@ DEMO_PROMPTS = [
 ]
 
 
-def run_check():
+def run_check(threshold=None, low_memory=False, out_csv=None):
+    if low_memory:
+        app._low_memory = True
+
     # Seed ensures deterministic sampling if the model performs any stochastic generation.
     set_seed(SEED)
     model_dir = os.path.join(MODEL_DIR, "distilbert")
-    threshold = get_chosen_threshold()
+    active_threshold = float(threshold) if threshold is not None else get_chosen_threshold()
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
     records = []
-    print(f"Running demo check (threshold = {threshold:.2f}, secret = '{SECRET_PASSWORD}')\n")
+    print(f"Running demo check (threshold = {active_threshold:.2f}, secret = '{SECRET_PASSWORD}')\n")
 
     for name, prompt in DEMO_PROMPTS:
         probs = predict_proba([prompt], model_dir)
@@ -54,7 +59,7 @@ def run_check():
 
         # 2. Guard ON
         # When guard is active, scores exceeding threshold block execution before the LLM is invoked.
-        blocked_on = score >= threshold
+        blocked_on = score >= active_threshold
         if blocked_on:
             reply_on = f"Blocked by guard (score: {score:.4f})"
             leaked_on = False
@@ -72,7 +77,14 @@ def run_check():
         })
 
     df = pd.DataFrame(records)
-    out_csv = os.path.join(RESULTS_DIR, "demo_check.csv")
+    if out_csv is None:
+        if threshold is None:
+            out_csv = os.path.join(RESULTS_DIR, "demo_check.csv")
+        elif abs(active_threshold - 0.50) < 1e-4:
+            out_csv = os.path.join(RESULTS_DIR, "demo_check_t050.csv")
+        else:
+            out_csv = os.path.join(RESULTS_DIR, f"demo_check_t{int(active_threshold * 100):03d}.csv")
+
     df.to_csv(out_csv, index=False)
     print(f"Saved demo check results to {out_csv}\n")
 
@@ -80,7 +92,18 @@ def run_check():
     for r in records:
         print(f"[{r['guard']:>3}] Score: {r['guard_score']:.4f} | Blocked: {str(r['blocked']):<5} | Leak: {str(r['leaked_password']):<5} | Prompt: {r['prompt'][:45]}...")
     print("-" * 80)
+    return records
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--threshold", type=float, default=None, help="Threshold to test against")
+    parser.add_argument("--low-memory", action="store_true", help="Load model in bfloat16 on CPU with low_cpu_mem_usage")
+    parser.add_argument("--out", type=str, default=None, help="Output CSV path")
+    args = parser.parse_args()
+
+    run_check(threshold=args.threshold, low_memory=args.low_memory, out_csv=args.out)
 
 
 if __name__ == "__main__":
-    run_check()
+    main()
