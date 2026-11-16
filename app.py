@@ -34,6 +34,7 @@ _llm_cache = {}
 _llm_load_error = None
 _low_memory = False
 _active_threshold = None
+_output_check = True
 
 
 def get_active_threshold():
@@ -172,9 +173,14 @@ def history_to_messages(history):
         is_blocked = False
         if a:
             a_lower = a.lower()
-            if "blocked by guard" in a_lower or "prompt injection detected" in a_lower:
+            if (
+                "blocked by guard" in a_lower
+                or "prompt injection detected" in a_lower
+                or "reply withheld" in a_lower
+                or "the reply contained the protected secret" in a_lower
+            ):
                 is_blocked = True
-        # Drop blocked attack turns and their preceding user inputs so the LLM context remains untainted.
+        # Drop blocked or withheld turns so the model context remains untainted.
         if is_blocked:
             continue
         # Strip HTML chips and formatting before passing history to avoid confusing the model tokenizer.
@@ -229,18 +235,18 @@ def check_password_leak(reply_text):
     """Check if the secret password appears in the reply."""
     if not reply_text:
         return False
-    lower_reply = reply_text.lower()
-    lower_secret = SECRET_PASSWORD.lower()
-    if lower_secret in lower_reply:
-        return True
-    secret_no_hyphen = lower_secret.replace("-", "")
-    reply_no_hyphen = lower_reply.replace("-", "")
-    if secret_no_hyphen in reply_no_hyphen:
-        return True
-    secret_spaced = lower_secret.replace("-", " ")
-    if secret_spaced in lower_reply:
-        return True
-    return False
+    clean_reply = re.sub(r"[^a-zA-Z0-9]", "", reply_text).lower()
+    clean_secret = re.sub(r"[^a-zA-Z0-9]", "", SECRET_PASSWORD).lower()
+    return clean_secret in clean_reply
+
+
+def reply_is_withheld(reply_text, guard_enabled, output_check=True):
+    """Check whether a reply should be withheld because it leaks the secret."""
+    if not output_check:
+        return False
+    if not guard_enabled:
+        return False
+    return check_password_leak(reply_text)
 
 
 def highlight_password(text):
@@ -362,29 +368,46 @@ def chat_handler(user_message, history, guard_enabled):
             f'</div>'
             )
 
-        leak_banner = ""
-        if leaked:
-            leak_banner = (
-                f'<div class="leak-notice-card">'
-                f'  <div class="leak-left">'
-                f'    <div class="leak-icon-circle">'
-                f'      <svg class="leak-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
-                f'        <circle cx="12" cy="12" r="10"/>'
-                f'        <line x1="12" y1="16" x2="12" y2="12"/>'
-                f'        <line x1="12" y1="8" x2="12.01" y2="8"/>'
+        if reply_is_withheld(raw_reply, guard_enabled, output_check=_output_check):
+            withheld_card = (
+                f'<div class="blocked-card">'
+                f'  <div class="blocked-header">'
+                f'    <div class="blocked-title-wrap">'
+                f'      <svg class="blocked-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                f'        <path d="M12 2L4 5.5v6.2c0 5.15 3.42 9.97 8 11.3 4.58-1.33 8-6.15 8-11.3V5.5L12 2z"/>'
+                f'        <rect x="9" y="10" width="6" height="5" rx="1"/>'
                 f'      </svg>'
-                f'    </div>'
-                f'    <div class="leak-text-wrap">'
-                f'      <span class="leak-title">Password policy notice</span>'
-                f'      <span class="leak-sep">&mdash;</span>'
-                f'      <span class="leak-sub">System constraint bypassed</span>'
+                f'      <span class="blocked-title">Reply withheld</span>'
                 f'    </div>'
                 f'  </div>'
-                f'  <span class="leak-log-badge">LOG</span>'
+                f'  <p class="blocked-desc">The reply contained the protected secret.</p>'
                 f'</div>'
             )
+            bot_reply = f"{chip}{withheld_card}"
+        else:
+            leak_banner = ""
+            if leaked:
+                leak_banner = (
+                    f'<div class="leak-notice-card">'
+                    f'  <div class="leak-left">'
+                    f'    <div class="leak-icon-circle">'
+                    f'      <svg class="leak-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+                    f'        <circle cx="12" cy="12" r="10"/>'
+                    f'        <line x1="12" y1="16" x2="12" y2="12"/>'
+                    f'        <line x1="12" y1="8" x2="12.01" y2="8"/>'
+                    f'      </svg>'
+                    f'    </div>'
+                    f'    <div class="leak-text-wrap">'
+                    f'      <span class="leak-title">Password policy notice</span>'
+                    f'      <span class="leak-sep">&mdash;</span>'
+                    f'      <span class="leak-sub">System constraint bypassed</span>'
+                    f'    </div>'
+                    f'  </div>'
+                    f'  <span class="leak-log-badge">LOG</span>'
+                    f'</div>'
+                )
 
-        bot_reply = f'{chip}{leak_banner}<div class="model-reply">{formatted_reply}</div>'
+            bot_reply = f'{chip}{leak_banner}<div class="model-reply">{formatted_reply}</div>'
 
     new_history = list(history_clean)
     new_history.append({"role": "user", "content": html.escape(raw_user)})
@@ -1197,13 +1220,14 @@ EMPTY_STATE_HTML = """
 """
 
 
-def build_app(threshold=None, low_memory=False):
+def build_app(threshold=None, low_memory=False, output_check=True):
     """Build the demo Blocks interface."""
-    global _active_threshold, _low_memory
+    global _active_threshold, _low_memory, _output_check
     if threshold is not None:
         _active_threshold = float(threshold)
     if low_memory:
         _low_memory = True
+    _output_check = output_check
 
     active_thresh = get_active_threshold()
 
@@ -1302,11 +1326,14 @@ def main():
     parser.add_argument("--port", type=int, default=7860, help="Local server port")
     parser.add_argument("--threshold", type=float, default=None, help="Override guard decision threshold")
     parser.add_argument("--low-memory", action="store_true", help="Load LLM on CPU using bfloat16 and low_cpu_mem_usage")
+    parser.add_argument("--no-output-check", action="store_true", help="Disable output check on model replies")
     args = parser.parse_args()
 
-    demo = build_app(threshold=args.threshold, low_memory=args.low_memory)
+    output_check = not args.no_output_check
+    demo = build_app(threshold=args.threshold, low_memory=args.low_memory, output_check=output_check)
     active_thresh = get_active_threshold()
     print(f"Active threshold: {active_thresh:.2f}", flush=True)
+    print(f"Output check: {'enabled' if _output_check else 'disabled'}", flush=True)
     print(f"\nStarting BREACHZERO demo on http://{args.host}:{args.port} (share={args.share})...", flush=True)
     demo.launch(server_name=args.host, server_port=args.port, share=args.share, css=CUSTOM_CSS)
 
