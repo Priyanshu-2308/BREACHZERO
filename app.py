@@ -435,13 +435,32 @@ body, html {
   font-family: var(--font-body) !important;
   margin: 0 !important;
   padding: 0 !important;
+  width: 100vw !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
 }
 
 .gradio-container {
-  max-width: 100% !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  min-height: 100vh !important;
   padding: 0 !important;
   margin: 0 !important;
   background-color: var(--bg-surface) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gradio-container .main,
+.gradio-container .wrap,
+.gradio-container .contain,
+.gradio-container .column,
+.gradio-container .block {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 footer {
@@ -454,105 +473,135 @@ footer {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
+  width: 100% !important;
   height: 64px !important;
-  background: rgba(19, 19, 20, 0.9) !important;
+  background: rgba(19, 19, 20, 0.92) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
-  z-index: 50 !important;
+  z-index: 100 !important;
   display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 0 24px !important;
-  margin: 0 !important;
+  padding: 0 28px !important;
+  box-sizing: border-box !important;
   border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  margin: 0 !important;
+}
+
+#top-header > div:first-child {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
 .brand-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-shield-svg {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.brand-title {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  color: #e3e3e3;
-  user-select: none;
-}
-
-.mode-pill-btn {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px 8px 3px 12px;
-  border-radius: var(--radius-full);
-  background: #1e1f20;
-  color: #c4c7c5;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  user-select: none;
-}
-
-.mode-pill-btn:hover {
-  background: #282a2c;
-  color: #e3e3e3;
-}
-
-.dropdown-chevron {
-  width: 18px;
-  height: 18px;
-  color: #8e918f;
-}
-
-.header-controls {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
+}
+
+.brand-shield-svg {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0 !important;
+}
+
+.brand-title {
+  font-family: var(--font-sans) !important;
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  color: #e3e3e3 !important;
+  user-select: none !important;
+}
+
+.mode-pill-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  padding: 3px 8px 3px 12px !important;
+  border-radius: var(--radius-full) !important;
+  background: #1e1f20 !important;
+  color: #c4c7c5 !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
+  user-select: none !important;
+}
+
+.mode-pill-btn:hover {
+  background: #282a2c !important;
+  color: #e3e3e3 !important;
+}
+
+.dropdown-chevron {
+  width: 18px !important;
+  height: 18px !important;
+  color: #8e918f !important;
+}
+
+#top-header > .header-controls,
+.header-controls {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 12px !important;
   margin: 0 !important;
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
-  flex-grow: 0 !important;
   width: auto !important;
 }
 
 #guard-switch-wrap {
   background: #1e1f20 !important;
-  border: 1px solid rgba(68, 71, 70, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--radius-full) !important;
-  padding: 6px 14px !important;
+  padding: 0 14px !important;
+  height: 34px !important;
+  min-height: 34px !important;
   margin: 0 !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   cursor: pointer !important;
   transition: background 0.15s ease, border-color 0.15s ease !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
 }
 
 #guard-switch-wrap:hover {
   background: #282a2c !important;
-  border-color: rgba(68, 71, 70, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-#guard-switch-wrap label {
-  display: flex !important;
+#guard-switch-wrap > .wrap,
+#guard-switch-wrap .wrap {
+  display: none !important;
+}
+
+#guard-switch-wrap label,
+#guard-switch-wrap .checkbox-container {
+  display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
   cursor: pointer !important;
@@ -560,6 +609,15 @@ footer {
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
+  color: #e3e3e3 !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+
+#guard-switch-wrap span {
   color: #e3e3e3 !important;
   font-family: var(--font-body) !important;
   font-size: 13px !important;
@@ -574,13 +632,15 @@ footer {
   height: 8px !important;
   min-width: 8px !important;
   min-height: 8px !important;
+  max-width: 8px !important;
+  max-height: 8px !important;
   border-radius: 50% !important;
   margin: 0 !important;
   padding: 0 !important;
   cursor: pointer !important;
   border: none !important;
   background: #a8c7fa !important;
-  box-shadow: 0 0 8px rgba(168, 199, 250, 0.8) !important;
+  box-shadow: 0 0 6px rgba(168, 199, 250, 0.9) !important;
   transition: all 0.2s ease !important;
 }
 
@@ -591,95 +651,158 @@ footer {
 
 .threshold-chip-view {
   background: #1e1f20 !important;
-  border: 1px solid rgba(68, 71, 70, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--radius-full) !important;
-  padding: 6px 14px !important;
+  height: 34px !important;
+  padding: 0 14px !important;
   font-family: var(--font-body) !important;
   font-size: 13px !important;
   color: #c4c7c5 !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   white-space: nowrap !important;
   user-select: none !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
 }
 
-/* Chat Layout */
-.main-column {
-  max-width: 820px !important;
-  margin: 0 auto !important;
-  padding: 80px 20px 220px 20px !important;
-  min-height: calc(100vh - 120px) !important;
-}
-
+/* Chat Layout & Hero */
 #chatbot-view {
+  max-width: 820px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 84px 24px 220px 24px !important;
+  min-height: calc(100vh - 200px) !important;
+  height: auto !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+#chatbot-view > .wrapper,
+#chatbot-view .bubble-wrap {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#chatbot-view .icon-button-wrapper.top-panel,
+#chatbot-view .message-buttons-right,
+#chatbot-view .message-buttons-left {
+  display: none !important;
+}
+
+#chatbot-view .message-wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Empty State Hero placed directly on the page background */
+.empty-state-wrap {
+  min-height: calc(100vh - 360px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 0 20px !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-#chatbot-view .message-wrap {
-  max-width: 820px !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
+.empty-title {
+  font-family: var(--font-sans) !important;
+  font-size: 50px !important;
+  line-height: 1.15 !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.025em !important;
+  background: linear-gradient(90deg, #ffffff 0%, #d2e3fc 50%, #a8c7fa 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  margin: 0 0 14px 0 !important;
+  text-align: center !important;
 }
 
-#chatbot-view .message.user, [data-testid="user"] {
+.empty-sub {
+  font-family: var(--font-body) !important;
+  font-size: 19px !important;
+  color: #c4c7c5 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  font-weight: 400 !important;
+}
+
+/* Message Rows */
+.message-row.user-row {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+  margin: 12px 0 !important;
+}
+
+.message-row.user-row .flex-wrap {
+  max-width: 80% !important;
+  margin-left: auto !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+}
+
+.message-row.user-row .user.message,
+.message-row.user-row [data-testid="user"] {
   background: #282a2c !important;
   color: #f1f3f4 !important;
-  border-radius: 22px !important;
-  padding: 14px 20px !important;
+  border-radius: 20px !important;
+  padding: 12px 18px !important;
   font-size: 15px !important;
   line-height: 1.6 !important;
   border: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
-  margin-left: auto !important;
-  max-width: 75% !important;
+  display: inline-block !important;
+  box-sizing: border-box !important;
 }
 
-#chatbot-view .message.bot, [data-testid="bot"] {
+.message-row.user-row [data-testid="user"] p,
+.message-row.user-row [data-testid="user"] .md {
+  color: #f1f3f4 !important;
+  margin: 0 !important;
+}
+
+.message-row.bot-row {
+  display: flex !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  margin: 12px 0 !important;
+}
+
+.message-row.bot-row .flex-wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.message-row.bot-row .bot.message,
+.message-row.bot-row [data-testid="bot"] {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   color: #e3e3e3 !important;
   font-size: 15px !important;
   line-height: 1.68 !important;
-  padding: 6px 0 !important;
-  max-width: 100% !important;
-}
-
-/* Empty State Hero */
-.empty-state-wrap {
-  min-height: calc(100vh - 300px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 20px;
-  box-sizing: border-box;
-  margin-top: -24px;
-}
-
-.empty-title {
-  font-family: var(--font-sans);
-  font-size: 50px;
-  line-height: 1.15;
-  font-weight: 500;
-  letter-spacing: -0.025em;
-  background: linear-gradient(90deg, #ffffff 0%, #d2e3fc 50%, #a8c7fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0 0 14px 0;
-  text-align: center;
-}
-
-.empty-sub {
-  font-family: var(--font-body);
-  font-size: 19px;
-  color: #c4c7c5;
-  margin: 0;
-  text-align: center;
-  font-weight: 400;
+  padding: 4px 0 !important;
+  width: 100% !important;
 }
 
 /* Guard Status Chips */
@@ -875,33 +998,38 @@ footer {
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 40 !important;
+  width: 100% !important;
+  z-index: 50 !important;
   background: linear-gradient(to top, #131314 65%, rgba(19, 19, 20, 0.95) 85%, transparent 100%) !important;
   pointer-events: none !important;
-  padding: 48px 20px 16px 20px !important;
+  padding: 40px 24px 18px 24px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 #composer-card {
   max-width: 820px !important;
   width: 100% !important;
   background: #1e1f20 !important;
-  border: 1px solid rgba(68, 71, 70, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 28px !important;
-  padding: 16px 16px 12px 20px !important;
+  padding: 16px 18px 12px 20px !important;
   pointer-events: auto !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
 }
 
 #composer-card:focus-within {
-  border-color: rgba(68, 71, 70, 0.7) !important;
+  border-color: rgba(168, 199, 250, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(168, 199, 250, 0.2) !important;
 }
 
 #user-textbox {
@@ -911,6 +1039,15 @@ footer {
   padding: 0 !important;
   margin: 0 !important;
   width: 100% !important;
+}
+
+#user-textbox > .wrap,
+#user-textbox .input-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 #user-textbox textarea, #user-textbox input {
@@ -926,6 +1063,7 @@ footer {
   padding: 4px 0 !important;
   height: 52px !important;
   min-height: 52px !important;
+  width: 100% !important;
 }
 
 #user-textbox textarea::placeholder, #user-textbox input::placeholder {
@@ -946,7 +1084,7 @@ footer {
 #composer-tools-left {
   display: flex !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 6px !important;
   padding: 0 !important;
   margin: 0 !important;
   background: transparent !important;
@@ -959,7 +1097,7 @@ footer {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: #c4c7c5;
+  color: #c4c7c5 !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -970,7 +1108,19 @@ footer {
 
 .composer-icon-action:hover {
   background: #282a2c;
-  color: #e3e3e3;
+  color: #e3e3e3 !important;
+}
+
+.composer-icon-action svg,
+.action-svg,
+.action-svg-sm {
+  stroke: #c4c7c5 !important;
+  color: #c4c7c5 !important;
+}
+
+.composer-icon-action:hover svg {
+  stroke: #e3e3e3 !important;
+  color: #e3e3e3 !important;
 }
 
 .action-svg {
@@ -984,29 +1134,51 @@ footer {
 }
 
 .composer-pill-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  color: #c4c7c5;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  user-select: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  border-radius: var(--radius-full) !important;
+  background: #282a2c !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #c4c7c5 !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+  user-select: none !important;
 }
 
 .composer-pill-action:hover {
-  background: #282a2c;
-  color: #e3e3e3;
+  background: #333538 !important;
+  color: #e3e3e3 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.composer-pill-action span {
+  color: #c4c7c5 !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.composer-pill-action:hover span {
+  color: #e3e3e3 !important;
+}
+
+.composer-pill-action svg {
+  stroke: #c4c7c5 !important;
+}
+
+.composer-pill-action:hover svg {
+  stroke: #e3e3e3 !important;
 }
 
 #composer-tools-right {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   padding: 0 !important;
   margin: 0 !important;
   background: transparent !important;
@@ -1052,6 +1224,17 @@ footer {
   user-select: none !important;
 }
 
+/* Suppress Gradio status trackers, grey overlay, and progress boxes */
+#user-textbox .wrap,
+#user-textbox .wrap.default.full,
+div[data-testid="status-tracker"],
+.loading-status,
+.progress-bar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 640px) {
   .mode-pill-btn {
     display: none !important;
@@ -1091,7 +1274,7 @@ def build_app(threshold=None, low_memory=False):
 
     active_thresh = get_active_threshold()
 
-    with gr.Blocks(title="BreachZero") as demo:
+    with gr.Blocks(title="BreachZero", fill_width=True, fill_height=True) as demo:
         with gr.Row(elem_id="top-header"):
             gr.HTML(
                 """
@@ -1124,20 +1307,19 @@ def build_app(threshold=None, low_memory=False):
                     f'<div class="threshold-chip-view">Threshold {active_thresh:.2f}</div>'
                 )
 
-        with gr.Column(elem_classes=["main-column"]):
-            chatbot = gr.Chatbot(
-                placeholder=EMPTY_STATE_HTML,
-                show_label=False,
-                container=False,
-                elem_id="chatbot-view",
-                render_markdown=True,
-                sanitize_html=False,
-            )
+        chatbot = gr.Chatbot(
+            placeholder=EMPTY_STATE_HTML,
+            show_label=False,
+            container=False,
+            elem_id="chatbot-view",
+            render_markdown=True,
+            sanitize_html=False,
+        )
 
         with gr.Column(elem_id="composer-bar"):
             with gr.Column(elem_id="composer-card"):
                 msg_input = gr.Textbox(
-                    placeholder="Ask Gemini or test an attack prompt...",
+                    placeholder="Ask BreachZero or test an attack prompt...",
                     show_label=False,
                     container=False,
                     lines=2,
