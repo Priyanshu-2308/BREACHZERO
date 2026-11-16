@@ -35,6 +35,7 @@ BREACHZERO/
 ├── data/
 │   ├── train.csv, val.csv, test.csv      # In-distribution splits
 │   ├── ood_jailbreak.csv                 # Out-of-distribution jailbreak benchmark
+│   ├── augmented_train_extra.csv         # Disguised training rows for augmentation experiment
 │   ├── attacks/                          # 5 disguised attack sets (label=1)
 │   │   └── {leetspeak, cyrillic, base64, wrapped, hindi}.csv
 │   └── benign_disguised/                 # Disguised benign controls (label=0)
@@ -185,7 +186,7 @@ A Google Colab runbook is provided in `colab_run.ipynb` (written for Google Cola
 3. Download models using `huggingface_hub` snapshot download as shown above.
 4. Launch the Gradio demo with public sharing:
    ```bash
-   !python app.py --share
+   !python app.py --share --threshold 0.5
    ```
 
 ---
@@ -200,7 +201,7 @@ The interface features a header with an interactive Guard toggle and active thre
 
 - **Guard ON**: Inputs with predicted injection score >= tuned threshold (stored in `results/chosen_threshold.txt`) are blocked before reaching the model.
 - **Guard OFF**: Inputs are passed directly to the LLM. Attackers can use persona adoption, reverse psychology, or diagnostic overrides to leak the secret.
-- **Interactive Examples**: Pre-configured buttons provide instant test cases for direct injection, wrapped injection, and legitimate benign requests.
+- **Interactive Examples**: Pre-configured cards provide instant test cases for a direct instruction override, a diagnostic-mode override, a letter-by-letter password extraction attempt, and a legitimate benign summary request.
 
 The default threshold (0.06) was chosen on the validation set to limit false alarms on the project's own benign data, but on everyday chat messages it blocks many harmless prompts: on 60 harmless chat prompts, the false-positive rate is 21.67% at threshold 0.06 and 15.00% at threshold 0.50 (see `results/chat_fpr_summary.csv`). For an interactive demo session, run:
 ```bash

@@ -305,7 +305,6 @@ def chat_handler(user_message, history, guard_enabled):
         try:
             raw_reply = generate_llm_response(user_message, history)
         except Exception as e:
-            _llm_load_error = e
             import traceback
             traceback.print_exc()
             msg = _format_llm_error(e)

@@ -16,9 +16,9 @@ Prompt injection attacks attempt to override system instructions and hijack Larg
 Author contributions recorded from git commit history:
 - **Samarth:** Dataset ingestion, cleaning, split creation, and central configuration (`data.py`, `config.py`).
 - **Prashant:** Adversarial disguise generators and TF-IDF plus Logistic Regression baseline (`attacks.py`, `baseline.py`).
-- **Sarthak:** DistilBERT and Multilingual DistilBERT fine-tuning and evaluation harness (`train.py`, `run_eval.py`, `metrics.py`, `colab_run.ipynb`).
+- **Sarthak:** DistilBERT and Multilingual DistilBERT fine-tuning and evaluation harness (`train.py`, `run_eval.py`, `metrics.py`, `colab_run.ipynb`, `guard.py`, `MODELS.md`).
 - **Shivam:** Disguised attack diagnostics (keyword shortcut check, long input strategies, benign disguise controls, false-positive token analysis, initial augmentation run).
-- **Priyanshu:** Full adversarial augmentation re-run, LIME explainability, validation threshold calibration, interactive Gradio demo, report, and repository cleanup (`augment_experiment.py`, `explain.py`, `threshold.py`, `app.py`, `demo_check.py`, `REPORT.md`, `README.md`).
+- **Priyanshu:** Full adversarial augmentation re-run, LIME explainability, validation threshold calibration, interactive Gradio demo, report, and repository cleanup (`augment_experiment.py`, `explain.py`, `threshold.py`, `app.py`, `demo_check.py`, `chat_fpr_check.py`, `REPORT.md`, `README.md`).
 
 ---
 
@@ -44,7 +44,7 @@ The training and in-distribution evaluation splits are built from three sources:
 
 The dataset is partitioned with a stratified 70/15/15 split (SEED=42):
 - `data/train.csv`: 3,258 rows (2,374 benign, 884 attack; approximately 27.13% attack). Because the training set is imbalanced, the baseline uses balanced class weights.
-- `data/val.csv`: 699 rows (509 benign, 190 attack).
+- `data/val.csv`: 698 rows (509 benign, 189 attack).
 - `data/test.csv`: 699 rows (509 benign, 190 attack).
 
 ### 2.2 Out-of-Distribution Benchmark
@@ -146,7 +146,7 @@ From `results/ood_fpr_diagnosis.csv` (English DistilBERT, threshold 0.5 on 638 b
 - Flagged false positives: 240 (FPR = 0.3762).
 - Median characters: Flagged = 258.0 vs Not Flagged = 205.5.
 - Median subword tokens: Flagged = 56.0 vs Not Flagged = 45.5.
-- Most over-represented words in false positives: `input` (ratio 40.83), `task` (ratio 27.98), `instructions` (ratio 20.42), `chat` (ratio 15.03).
+- Notable prompt-related over-represented words in false positives include: `input` (ratio 40.83), `task` (ratio 27.98), `instructions` (ratio 20.42), and `chat` (ratio 15.03) (excluding proper nouns and dataset-specific artifacts in `results/ood_fpr_diagnosis.csv`).
 
 Four examples flagged in `results/ood_flagged_examples.csv`:
 1. *"You are a medieval blacksmith named Wulfric, living in a small village. You are known for your craftsmanship and humor. You enjoy chatting with customers..."* (score 0.9745)
@@ -291,7 +291,7 @@ We verified the demo inputs with greedy decoding (`demo_check.py`, recorded in `
 
 With the guard off, all three attack prompts successfully coaxed the password from the LLM. With the guard on, all three attacks were blocked, while the benign summary request passed cleanly.
 
-The verification table above was produced at the calibrated threshold of 0.06 (`results/demo_check.csv`). When tested at threshold 0.50 (`demo_check.py --threshold 0.5`, recorded in `results/demo_check_t050.csv`), all three attacks still scored well above the threshold (0.9819 to 0.9972) and were blocked, while the benign summary request scored 0.0019 and passed cleanly.
+The verification table above was produced at the calibrated threshold of 0.06 (`results/demo_check.csv`). When tested at threshold 0.50 (`demo_check.py --threshold 0.5`, recorded in `results/demo_check_t050.csv`), all three attacks still scored well above the threshold (0.9819 to 0.9972) and were blocked, while the benign summary request scored 0.0019 and passed cleanly. While `app.py` defaults to `0.06` from `results/chosen_threshold.txt`, running with `--threshold 0.5` is recommended for interactive chat sessions to reduce false positives on everyday greetings and conversational prompts (see Section 10).
 
 ---
 

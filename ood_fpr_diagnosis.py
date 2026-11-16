@@ -117,11 +117,19 @@ def main():
     print("")
     print("10 EXAMPLE FLAGGED BENIGN PROMPTS (truncated to 200 chars):")
     print("-" * 65)
+    flagged_df = benign_df[benign_df["flagged"]].head(10)
     examples_for_csv = []
-    for i, t in enumerate(flagged_texts[:10], 1):
-        sample_short = t[:200].replace("\n", " ")
-        examples_for_csv.append(sample_short)
+    for i, (_, row) in enumerate(flagged_df.iterrows(), 1):
+        sample_short = str(row["text"])[:200].replace("\n", " ")
+        examples_for_csv.append({
+            "truncated_text": sample_short,
+            "score": float(row["prob"]),
+        })
         print(f"[{i:2d}] {sample_short}...")
+
+    examples_csv = os.path.join(RESULTS_DIR, "ood_flagged_examples.csv")
+    pd.DataFrame(examples_for_csv).to_csv(examples_csv, index=False)
+    print(f"Saved flagged examples to {examples_csv}")
 
     records = [
         {"metric": "total_benign", "value": n_benign},
