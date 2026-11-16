@@ -195,13 +195,12 @@ A Google Colab runbook is provided in `colab_run.ipynb` (written for Google Cola
 
 The demo couples a small instruction model (`Qwen/Qwen2.5-0.5B-Instruct`) with the `BREACHZERO` guard. The LLM is instructed in its system prompt to guard a confidential secret password (`Omega-7-Blue-Sapphire`).
 
-The interface features a header with an interactive Guard toggle and active threshold chip, a centered conversation view, and a fixed bottom composer with one-click example cards. Blocked injections display a security card showing the detection score against the decision threshold, while passed messages display a verification chip.
+The interface features a header with an interactive Guard toggle and active threshold chip, a centered conversation view, and a fixed bottom composer. Blocked injections display a security card showing the detection score against the decision threshold, while passed messages display a verification chip.
 
 ![BREACHZERO Demo](results/demo_screenshot.png)
 
 - **Guard ON**: Inputs with predicted injection score >= tuned threshold (stored in `results/chosen_threshold.txt`) are blocked before reaching the model.
 - **Guard OFF**: Inputs are passed directly to the LLM. Attackers can use persona adoption, reverse psychology, or diagnostic overrides to leak the secret.
-- **Interactive Examples**: Pre-configured cards provide instant test cases for a direct instruction override, a diagnostic-mode override, a letter-by-letter password extraction attempt, and a legitimate benign summary request.
 
 The default threshold (0.06) was chosen on the validation set to limit false alarms on the project's own benign data, but on everyday chat messages it blocks many harmless prompts: on 60 harmless chat prompts, the false-positive rate is 21.67% at threshold 0.06 and 15.00% at threshold 0.50 (see `results/chat_fpr_summary.csv`). For an interactive demo session, run:
 ```bash
