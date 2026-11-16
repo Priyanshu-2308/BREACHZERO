@@ -293,6 +293,8 @@ With the guard off, all three attack prompts successfully coaxed the password fr
 
 The verification table above was produced at the calibrated threshold of 0.06 (`results/demo_check.csv`). When tested at threshold 0.50 (`demo_check.py --threshold 0.5`, recorded in `results/demo_check_t050.csv`), all three attacks still scored well above the threshold (0.9819 to 0.9972) and were blocked, while the benign summary request scored 0.0019 and passed cleanly. While `app.py` defaults to `0.06` from `results/chosen_threshold.txt`, running with `--threshold 0.5` is recommended for interactive chat sessions to reduce false positives on everyday greetings and conversational prompts (see Section 10).
 
+We also tested a secondary output check across seven prompts (`output_check.py`, recorded in `results/output_check.csv`). The prompts include the four demo prompts and three harmless password queries. Across the 21 tested settings, 8 replies contained the secret. With the guard on, all 3 replies that contained the secret were withheld by the output check (1 at threshold 0.06 and 2 at threshold 0.50). With the guard off, none were withheld.
+
 ---
 
 ## 10. Limitations
@@ -303,6 +305,7 @@ The verification table above was produced at the calibrated threshold of 0.06 (`
 4. **Single-model threshold tuning:** The 0.06 threshold was tuned exclusively for the non-augmented English DistilBERT model.
 5. **Training source confounding:** Training data sources are heavily correlated with target labels, as documented in Section 2.3.
 6. **Everyday chat false positives:** The calibrated decision threshold (0.06) was selected on in-distribution validation data where benign examples were standard sentences. On 60 harmless everyday chat messages (`chat_fpr_check.py`), English DistilBERT blocked 21.67% (13 of 60) at the chosen threshold 0.06 and 15.00% (9 of 60) at threshold 0.50 (`results/chat_fpr_summary.csv`). Harmless conversational queries like `hi, can you tell me something about shakespeare` scored 0.2224 (blocked at 0.06, allowed at 0.50), while short greetings scored above 0.95. We guess that this happens because polite conversational openers and phrasing (such as "can you tell me" and standard greetings) resemble wording patterns common in phishing and adversarial prompts in the training corpus.
+7. **Input-only classification:** The guard classifies the incoming message only. A harmless-looking request can still make a small model reveal the secret. Our output check catches this in the demo, but it works only because we know the exact secret.
 
 ---
 

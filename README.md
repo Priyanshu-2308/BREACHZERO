@@ -57,6 +57,7 @@ BREACHZERO/
 │   ├── chosen_threshold.txt              # Tuned decision threshold (val FPR <= 2%)
 │   ├── demo_check.csv                    # Reproducible demo verification results (threshold 0.06)
 │   ├── demo_check_t050.csv               # Demo verification results at threshold 0.50
+│   ├── output_check.csv                  # Demo output check verification results
 │   ├── chat_fpr_check.csv                # Harmless chat prompt evaluation scores
 │   ├── chat_fpr_summary.csv              # Chat false positive rates at 0.06 and 0.50
 │   └── lime_examples.html & .png         # LIME feature attribution visualizations
@@ -76,6 +77,7 @@ BREACHZERO/
 ├── explain.py                            # LIME explainability script
 ├── app.py                                # Interactive Gradio chat demo
 ├── demo_check.py                         # Reproducible demo verification script
+├── output_check.py                       # Verifies the output check on demo prompts
 ├── chat_fpr_check.py                     # Evaluates false-positive rate on plain chat prompts
 ├── colab_run.ipynb                       # Google Colab notebook for training and eval
 ├── MODELS.md                             # Model repository links and download commands
@@ -167,6 +169,7 @@ python explain.py                 # Generates HTML and PNG feature attribution p
 # Step 10: Interactive Gradio Demo & Verification
 python demo_check.py              # Test demo prompts with guard ON and OFF (threshold 0.06)
 python demo_check.py --threshold 0.5 # Test demo prompts at threshold 0.50
+python output_check.py            # Test output check on demo prompts
 python app.py                     # Launch chat demo (pass --share for public URL)
 ```
 
@@ -201,6 +204,8 @@ The interface features a header with an interactive Guard toggle and active thre
 
 - **Guard ON**: Inputs with predicted injection score >= tuned threshold (stored in `results/chosen_threshold.txt`) are blocked before reaching the model.
 - **Guard OFF**: Inputs are passed directly to the LLM. Attackers can use persona adoption, reverse psychology, or diagnostic overrides to leak the secret.
+
+We also add a second check on model replies. It is a string match for the known secret, and it only runs when the guard is on. If you want to test input filtering only, pass the `--no-output-check` flag.
 
 The default threshold (0.06) was chosen on the validation set to limit false alarms on the project's own benign data, but on everyday chat messages it blocks many harmless prompts: on 60 harmless chat prompts, the false-positive rate is 21.67% at threshold 0.06 and 15.00% at threshold 0.50 (see `results/chat_fpr_summary.csv`). For an interactive demo session, run:
 ```bash
