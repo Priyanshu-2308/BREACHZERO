@@ -450,121 +450,165 @@ footer {
 
 /* Fixed Top Header */
 #top-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background: rgba(19, 19, 20, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(48, 49, 52, 0.7);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 64px !important;
+  background: rgba(19, 19, 20, 0.9) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 24px !important;
+  margin: 0 !important;
+  border: none !important;
 }
 
-.header-brand {
+.header-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.brand-shield-wrap {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--surface-container);
-  border: 1px solid #2e3134;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.brand-shield-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.header-title {
-  font-family: var(--font-sans);
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  color: var(--on-surface);
-}
-
-.header-subtitle-chip {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-subtle);
-  background: var(--surface-container);
-  border: 1px solid rgba(48, 49, 52, 0.8);
-  border-radius: var(--radius-full);
-  padding: 2px 10px;
-}
-
-.header-controls {
+.brand-item {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.threshold-chip-view {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-subtle);
-  background: rgba(30, 31, 32, 0.7);
-  border: 1px solid rgba(48, 49, 52, 0.8);
+.brand-shield-svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #e3e3e3;
+  user-select: none;
+}
+
+.mode-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px 3px 12px;
   border-radius: var(--radius-full);
-  padding: 5px 12px;
+  background: #1e1f20;
+  color: #c4c7c5;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.mode-pill-btn:hover {
+  background: #282a2c;
+  color: #e3e3e3;
+}
+
+.dropdown-chevron {
+  width: 18px;
+  height: 18px;
+  color: #8e918f;
+}
+
+.header-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  flex-grow: 0 !important;
+  width: auto !important;
 }
 
 #guard-switch-wrap {
-  display: flex;
-  align-items: center;
+  background: #1e1f20 !important;
+  border: 1px solid rgba(68, 71, 70, 0.4) !important;
+  border-radius: var(--radius-full) !important;
+  padding: 6px 14px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease, border-color 0.15s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+#guard-switch-wrap:hover {
+  background: #282a2c !important;
+  border-color: rgba(68, 71, 70, 0.6) !important;
 }
 
 #guard-switch-wrap label {
-  background: var(--surface-container) !important;
-  border: 1px solid var(--outline-variant) !important;
-  border-radius: var(--radius-full) !important;
-  padding: 5px 14px !important;
-  font-family: var(--font-body) !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  color: var(--on-surface) !important;
-  cursor: pointer;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-#guard-switch-wrap label:hover {
-  background: var(--surface-container-high) !important;
-  border-color: var(--outline-focus) !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #e3e3e3 !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  user-select: none !important;
 }
 
 #guard-switch-wrap input[type="checkbox"] {
-  accent-color: var(--primary) !important;
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  border-radius: 50% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: #a8c7fa !important;
+  box-shadow: 0 0 8px rgba(168, 199, 250, 0.8) !important;
+  transition: all 0.2s ease !important;
+}
+
+#guard-switch-wrap input[type="checkbox"]:not(:checked) {
+  background: #8e918f !important;
+  box-shadow: none !important;
+}
+
+.threshold-chip-view {
+  background: #1e1f20 !important;
+  border: 1px solid rgba(68, 71, 70, 0.3) !important;
+  border-radius: var(--radius-full) !important;
+  padding: 6px 14px !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  color: #c4c7c5 !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  user-select: none !important;
 }
 
 /* Chat Layout */
 .main-column {
-  max-width: 780px !important;
+  max-width: 820px !important;
   margin: 0 auto !important;
-  padding: 80px 16px 140px 16px !important;
-  min-height: calc(100vh - 120px);
+  padding: 80px 20px 220px 20px !important;
+  min-height: calc(100vh - 120px) !important;
 }
 
 #chatbot-view {
@@ -574,7 +618,7 @@ footer {
 }
 
 #chatbot-view .message-wrap {
-  max-width: 780px !important;
+  max-width: 820px !important;
   margin: 0 auto !important;
   padding: 0 !important;
 }
@@ -582,22 +626,22 @@ footer {
 #chatbot-view .message.user, [data-testid="user"] {
   background: #282a2c !important;
   color: #f1f3f4 !important;
-  border-radius: 22px 22px 4px 22px !important;
-  padding: 12px 18px !important;
-  font-size: 14.5px !important;
+  border-radius: 22px !important;
+  padding: 14px 20px !important;
+  font-size: 15px !important;
   line-height: 1.6 !important;
   border: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
   margin-left: auto !important;
-  max-width: 80% !important;
+  max-width: 75% !important;
 }
 
 #chatbot-view .message.bot, [data-testid="bot"] {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: var(--on-surface) !important;
-  font-size: 14.5px !important;
+  color: #e3e3e3 !important;
+  font-size: 15px !important;
   line-height: 1.68 !important;
   padding: 6px 0 !important;
   max-width: 100% !important;
@@ -605,31 +649,34 @@ footer {
 
 /* Empty State Hero */
 .empty-state-wrap {
+  min-height: calc(100vh - 300px);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 80px 12px 20px 12px;
-  max-width: 760px;
-  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  margin-top: -24px;
 }
 
 .empty-title {
   font-family: var(--font-sans);
-  font-size: 42px;
+  font-size: 50px;
+  line-height: 1.15;
   font-weight: 500;
   letter-spacing: -0.025em;
   background: linear-gradient(90deg, #ffffff 0%, #d2e3fc 50%, #a8c7fa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0 0 12px 0;
+  margin: 0 0 14px 0;
   text-align: center;
 }
 
 .empty-sub {
   font-family: var(--font-body);
-  font-size: 17px;
-  color: var(--on-surface-variant);
+  font-size: 19px;
+  color: #c4c7c5;
   margin: 0;
   text-align: center;
   font-weight: 400;
@@ -640,20 +687,20 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: var(--radius-full);
   font-family: var(--font-mono);
   font-size: 11px;
-  background: var(--surface-container);
-  color: var(--text-subtle);
-  border: 1px solid var(--outline-variant);
+  background: #1e1f20;
+  color: #9aa0a6;
+  border: 1px solid #303134;
   margin-bottom: 10px;
 }
 
 .chip-icon {
   width: 13px;
   height: 13px;
-  color: var(--text-subtle);
+  color: #9aa0a6;
 }
 
 .chip-dot-off {
@@ -669,9 +716,9 @@ footer {
 
 /* Blocked Card */
 .blocked-card {
-  background: var(--surface-container);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--radius-lg);
+  background: #1e1f20;
+  border: 1px solid #303134;
+  border-radius: 16px;
   padding: 16px 20px;
   margin: 6px 0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -817,115 +864,209 @@ footer {
 
 .model-reply {
   font-family: var(--font-body);
-  font-size: 14.5px;
-  color: var(--on-surface);
+  font-size: 15px;
+  color: #e3e3e3;
   line-height: 1.68;
 }
 
-/* Floating Composer */
+/* Floating Composer Card */
 #composer-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, var(--bg-surface) 60%, rgba(19, 19, 20, 0.9) 85%, transparent 100%);
-  padding: 16px 16px 20px 16px;
-  z-index: 90;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 40 !important;
+  background: linear-gradient(to top, #131314 65%, rgba(19, 19, 20, 0.95) 85%, transparent 100%) !important;
+  pointer-events: none !important;
+  padding: 48px 20px 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  margin: 0 !important;
 }
 
-#composer-inner {
-  background: var(--surface-container);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--radius-full);
-  max-width: 780px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 6px 8px 6px 20px;
-  gap: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-  transition: all 0.2s ease;
+#composer-card {
+  max-width: 820px !important;
+  width: 100% !important;
+  background: #1e1f20 !important;
+  border: 1px solid rgba(68, 71, 70, 0.4) !important;
+  border-radius: 28px !important;
+  padding: 16px 16px 12px 20px !important;
+  pointer-events: auto !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
 }
 
-#composer-inner:focus-within {
-  border-color: var(--outline-focus);
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.65);
+#composer-card:focus-within {
+  border-color: rgba(68, 71, 70, 0.7) !important;
 }
 
 #user-textbox {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: var(--on-surface) !important;
-  font-family: var(--font-body) !important;
-  font-size: 15px !important;
-  padding: 6px 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
 }
 
 #user-textbox textarea, #user-textbox input {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: var(--on-surface) !important;
+  outline: none !important;
+  color: #e3e3e3 !important;
   font-family: var(--font-body) !important;
-  font-size: 15px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  resize: none !important;
+  padding: 4px 0 !important;
+  height: 52px !important;
+  min-height: 52px !important;
 }
 
 #user-textbox textarea::placeholder, #user-textbox input::placeholder {
-  color: var(--text-muted) !important;
+  color: #8e918f !important;
+}
+
+#composer-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 4px 0 0 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+#composer-tools-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  flex-grow: 0 !important;
+  width: auto !important;
+}
+
+.composer-icon-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #c4c7c5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.composer-icon-action:hover {
+  background: #282a2c;
+  color: #e3e3e3;
+}
+
+.action-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.action-svg-sm {
+  width: 17px;
+  height: 17px;
+}
+
+.composer-pill-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  color: #c4c7c5;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.composer-pill-action:hover {
+  background: #282a2c;
+  color: #e3e3e3;
+}
+
+#composer-tools-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  flex-grow: 0 !important;
+  width: auto !important;
 }
 
 #send-button {
-  border-radius: var(--radius-full) !important;
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  padding: 0 !important;
-  background: var(--primary) !important;
-  color: var(--on-primary) !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  border-radius: 50% !important;
+  background: #a8c7fa !important;
+  color: #001e2c !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   border: none !important;
-  cursor: pointer;
+  cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.15s ease;
+  padding: 0 !important;
+  margin: 0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.15s ease !important;
 }
 
 #send-button:hover {
-  background: var(--primary-hover) !important;
-  transform: scale(1.05);
+  background: #c3d9ff !important;
+  transform: scale(1.05) !important;
 }
 
 .composer-footer-caption {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 10px;
-  letter-spacing: 0.01em;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  color: #8e918f !important;
+  text-align: center !important;
+  margin-top: 12px !important;
+  margin-bottom: 0 !important;
+  pointer-events: auto !important;
+  user-select: none !important;
 }
 
 @media (max-width: 640px) {
-  .header-subtitle-chip {
+  .mode-pill-btn {
     display: none !important;
   }
   .threshold-chip-view {
     display: none !important;
   }
   #top-header {
-    padding: 0 12px;
+    padding: 0 16px !important;
   }
   .empty-title {
-    font-size: 28px;
+    font-size: 32px !important;
   }
   .empty-sub {
-    font-size: 15px;
+    font-size: 16px !important;
   }
 }
 """
@@ -954,16 +1095,20 @@ def build_app(threshold=None, low_memory=False):
         with gr.Row(elem_id="top-header"):
             gr.HTML(
                 """
-                <div class="header-brand">
-                  <div class="brand-shield-wrap">
-                    <svg class="brand-shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 2L4 5.5v6.2c0 5.15 3.42 9.97 8 11.3 4.58-1.33 8-6.15 8-11.3V5.5L12 2z"/>
-                      <path d="M12 8v8"/>
-                      <path d="M9.5 10.5L12 8l2.5 2.5"/>
+                <div class="header-left">
+                  <div class="brand-item">
+                    <svg class="brand-shield-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L4 5.5V11.5C4 16.5 7.4 21.1 12 22.5C16.6 21.1 20 16.5 20 11.5V5.5L12 2Z" stroke="#a8c7fa" stroke-width="1.75" stroke-linejoin="round"/>
+                      <path d="M12 7V17M9 9.5C9 8.1 10.3 7 12 7C13.7 7 15 8.1 15 9.5C15 10.9 13.7 12 12 12M9 14.5C9 13.1 10.3 12 12 12C13.7 12 15 13.1 15 14.5C15 15.9 13.7 17 12 17" stroke="#a8c7fa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="brand-title">BreachZero</span>
+                  </div>
+                  <div class="mode-pill-btn">
+                    <span>Guard demo</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M7 10l5 5 5-5z"/>
                     </svg>
                   </div>
-                  <span class="header-title">BreachZero</span>
-                  <span class="header-subtitle-chip">Prompt-injection guard</span>
                 </div>
                 """
             )
@@ -990,23 +1135,62 @@ def build_app(threshold=None, low_memory=False):
             )
 
         with gr.Column(elem_id="composer-bar"):
-            with gr.Row(elem_id="composer-inner"):
+            with gr.Column(elem_id="composer-card"):
                 msg_input = gr.Textbox(
-                    placeholder="Ask BreachZero or test an attack prompt...",
+                    placeholder="Ask Gemini or test an attack prompt...",
                     show_label=False,
                     container=False,
-                    scale=10,
+                    lines=2,
+                    max_lines=6,
                     elem_id="user-textbox",
                     autofocus=True,
                 )
-                send_btn = gr.Button(
-                    "↑",
-                    variant="primary",
-                    scale=1,
-                    elem_id="send-button",
-                )
+                with gr.Row(elem_id="composer-toolbar"):
+                    with gr.Row(elem_id="composer-tools-left"):
+                        gr.HTML(
+                            """
+                            <div class="composer-icon-action" title="Add file or link">
+                              <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                              </svg>
+                            </div>
+                            <div class="composer-pill-action" title="Tools">
+                              <svg class="action-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" y1="21" x2="4" y2="14"></line>
+                                <line x1="4" y1="10" x2="4" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12" y2="3"></line>
+                                <line x1="20" y1="21" x2="20" y2="16"></line>
+                                <line x1="20" y1="12" x2="20" y2="3"></line>
+                                <line x1="1" y1="14" x2="7" y2="14"></line>
+                                <line x1="9" y1="8" x2="15" y2="8"></line>
+                                <line x1="17" y1="16" x2="23" y2="16"></line>
+                              </svg>
+                              <span>Tools</span>
+                            </div>
+                            """
+                        )
+                    with gr.Row(elem_id="composer-tools-right"):
+                        gr.HTML(
+                            """
+                            <div class="composer-icon-action" title="Microphone">
+                              <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                              </svg>
+                            </div>
+                            """
+                        )
+                        send_btn = gr.Button(
+                            "↑",
+                            variant="primary",
+                            elem_id="send-button",
+                        )
             gr.HTML(
-                '<div class="composer-footer-caption">BreachZero demo model: Qwen2.5-0.5B-Instruct. The system prompt contains a secret password.</div>'
+                '<p class="composer-footer-caption">BreachZero demo model: Qwen2.5-0.5B-Instruct. The system prompt contains a secret password.</p>'
             )
 
         msg_input.submit(
