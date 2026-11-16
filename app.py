@@ -1002,7 +1002,7 @@ footer {
   z-index: 50 !important;
   background: linear-gradient(to top, #131314 65%, rgba(19, 19, 20, 0.95) 85%, transparent 100%) !important;
   pointer-events: none !important;
-  padding: 40px 24px 18px 24px !important;
+  padding: 32px 24px 18px 24px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -1016,13 +1016,16 @@ footer {
   background: #1e1f20 !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 28px !important;
-  padding: 16px 18px 12px 20px !important;
+  padding: 8px 10px 8px 20px !important;
   pointer-events: auto !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
   display: flex !important;
-  flex-direction: column !important;
-  gap: 4px !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
   margin: 0 auto !important;
   box-sizing: border-box !important;
 }
@@ -1038,7 +1041,11 @@ footer {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
+  flex: 1 1 auto !important;
   width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 #user-textbox > .wrap,
@@ -1048,6 +1055,7 @@ footer {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
+  width: 100% !important;
 }
 
 #user-textbox textarea, #user-textbox input {
@@ -1057,160 +1065,51 @@ footer {
   outline: none !important;
   color: #e3e3e3 !important;
   font-family: var(--font-body) !important;
-  font-size: 16px !important;
+  font-size: 15px !important;
   line-height: 1.5 !important;
   resize: none !important;
-  padding: 4px 0 !important;
-  height: 52px !important;
-  min-height: 52px !important;
+  padding: 7px 0 !important;
+  margin: 0 !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 120px !important;
   width: 100% !important;
+  box-sizing: content-box !important;
 }
 
 #user-textbox textarea::placeholder, #user-textbox input::placeholder {
   color: #8e918f !important;
 }
 
-#composer-toolbar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  width: 100% !important;
-  padding: 4px 0 0 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: none !important;
-}
-
-#composer-tools-left {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: none !important;
-  flex-grow: 0 !important;
-  width: auto !important;
-}
-
-.composer-icon-action {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  color: #c4c7c5 !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  user-select: none;
-}
-
-.composer-icon-action:hover {
-  background: #282a2c;
-  color: #e3e3e3 !important;
-}
-
-.composer-icon-action svg,
-.action-svg,
-.action-svg-sm {
-  stroke: #c4c7c5 !important;
-  color: #c4c7c5 !important;
-}
-
-.composer-icon-action:hover svg {
-  stroke: #e3e3e3 !important;
-  color: #e3e3e3 !important;
-}
-
-.action-svg {
-  width: 20px;
-  height: 20px;
-}
-
-.action-svg-sm {
-  width: 17px;
-  height: 17px;
-}
-
-.composer-pill-action {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 6px 14px !important;
-  border-radius: var(--radius-full) !important;
-  background: #282a2c !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #c4c7c5 !important;
-  font-family: var(--font-body) !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
-  user-select: none !important;
-}
-
-.composer-pill-action:hover {
-  background: #333538 !important;
-  color: #e3e3e3 !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
-
-.composer-pill-action span {
-  color: #c4c7c5 !important;
-  font-family: var(--font-body) !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-}
-
-.composer-pill-action:hover span {
-  color: #e3e3e3 !important;
-}
-
-.composer-pill-action svg {
-  stroke: #c4c7c5 !important;
-}
-
-.composer-pill-action:hover svg {
-  stroke: #e3e3e3 !important;
-}
-
-#composer-tools-right {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: none !important;
-  flex-grow: 0 !important;
-  width: auto !important;
-}
-
 #send-button {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
-  max-width: 40px !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
   border-radius: 50% !important;
   background: #a8c7fa !important;
   color: #001e2c !important;
-  font-size: 20px !important;
+  font-size: 18px !important;
   font-weight: 700 !important;
   border: none !important;
   cursor: pointer !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
   margin: 0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  align-self: flex-end !important;
 }
 
 #send-button:hover {
   background: #c3d9ff !important;
-  transform: scale(1.05) !important;
+  transform: scale(1.04) !important;
 }
 
 .composer-footer-caption {
@@ -1218,10 +1117,44 @@ footer {
   font-size: 12px !important;
   color: #8e918f !important;
   text-align: center !important;
-  margin-top: 12px !important;
+  margin-top: 10px !important;
   margin-bottom: 0 !important;
   pointer-events: auto !important;
   user-select: none !important;
+}
+
+/* Custom sleek scrollbar for textarea and conversation */
+#user-textbox textarea::-webkit-scrollbar,
+#chatbot-view::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#user-textbox textarea::-webkit-scrollbar-track,
+#chatbot-view::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#user-textbox textarea::-webkit-scrollbar-thumb,
+#chatbot-view::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+#user-textbox textarea::-webkit-scrollbar-thumb:hover,
+#chatbot-view::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+#user-textbox textarea,
+#chatbot-view,
+body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 /* Suppress Gradio status trackers, grey overlay, and progress boxes */
@@ -1317,60 +1250,23 @@ def build_app(threshold=None, low_memory=False):
         )
 
         with gr.Column(elem_id="composer-bar"):
-            with gr.Column(elem_id="composer-card"):
+            with gr.Row(elem_id="composer-card"):
                 msg_input = gr.Textbox(
-                    placeholder="Ask BreachZero or test an attack prompt...",
+                    placeholder="Test an attack prompt...",
                     show_label=False,
                     container=False,
-                    lines=2,
-                    max_lines=6,
+                    lines=1,
+                    max_lines=5,
                     elem_id="user-textbox",
                     autofocus=True,
+                    scale=1,
                 )
-                with gr.Row(elem_id="composer-toolbar"):
-                    with gr.Row(elem_id="composer-tools-left"):
-                        gr.HTML(
-                            """
-                            <div class="composer-icon-action" title="Add file or link">
-                              <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                              </svg>
-                            </div>
-                            <div class="composer-pill-action" title="Tools">
-                              <svg class="action-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="4" y1="21" x2="4" y2="14"></line>
-                                <line x1="4" y1="10" x2="4" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12" y2="3"></line>
-                                <line x1="20" y1="21" x2="20" y2="16"></line>
-                                <line x1="20" y1="12" x2="20" y2="3"></line>
-                                <line x1="1" y1="14" x2="7" y2="14"></line>
-                                <line x1="9" y1="8" x2="15" y2="8"></line>
-                                <line x1="17" y1="16" x2="23" y2="16"></line>
-                              </svg>
-                              <span>Tools</span>
-                            </div>
-                            """
-                        )
-                    with gr.Row(elem_id="composer-tools-right"):
-                        gr.HTML(
-                            """
-                            <div class="composer-icon-action" title="Microphone">
-                              <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                <line x1="12" y1="19" x2="12" y2="23"></line>
-                                <line x1="8" y1="23" x2="16" y2="23"></line>
-                              </svg>
-                            </div>
-                            """
-                        )
-                        send_btn = gr.Button(
-                            "↑",
-                            variant="primary",
-                            elem_id="send-button",
-                        )
+                send_btn = gr.Button(
+                    "↑",
+                    variant="primary",
+                    elem_id="send-button",
+                    scale=0,
+                )
             gr.HTML(
                 '<p class="composer-footer-caption">BreachZero demo model: Qwen2.5-0.5B-Instruct. The system prompt contains a secret password.</p>'
             )
